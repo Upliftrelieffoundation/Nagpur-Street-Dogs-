@@ -4,10 +4,27 @@ import supabase from '../Utils/supabase.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+const hasRazorpayKeys = process.env.RAZORPAY_KEY_ID && 
+                         process.env.RAZORPAY_KEY_ID !== 'your_razorpay_key_id' &&
+                         process.env.RAZORPAY_KEY_SECRET &&
+                         process.env.RAZORPAY_KEY_SECRET !== 'your_razorpay_key_secret';
+
+let razorpay;
+
+if (hasRazorpayKeys) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn('⚠️ Razorpay environment variables are missing or placeholders. Donations will not work.');
+  // Mock object to prevent app crash at load-time
+  razorpay = {
+    orders: {
+      create: () => Promise.reject(new Error('Razorpay is not configured on the server.')),
+    }
+  };
+}
 
 /**
  * CREATE ORDER — creates Razorpay order + stores pending donation in Supabase
