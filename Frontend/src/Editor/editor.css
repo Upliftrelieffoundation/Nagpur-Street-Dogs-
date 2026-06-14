@@ -1,0 +1,189 @@
+/* Add this to your src/editor.css or custom stylesheet */
+
+/* General Editor.js Styles */
+.textEditor {
+    background-color: white;
+    padding: 1.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    font-family: 'Arial', sans-serif;
+}
+  
+/* Header Tool */
+.textEditor h1, .textEditor h2, .textEditor h3 {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #065f46;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .textEditor h1, .textEditor h2, .textEditor h3 {
+        font-size: 1.875rem;
+    }
+}
+  
+/* List Tool (Bullet/Ordered List) */
+.textEditor ul, .textEditor ol {
+    list-style-position: inside;
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.textEditor ul > li, .textEditor ol > li {
+    margin-bottom: 0.5rem;
+}
+  
+.textEditor li {
+    font-size: 1.125rem;
+    color: #374151;
+}
+  
+/* Image Tool */
+.textEditor .ce-block img {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    object-fit: cover;
+    max-width: 100%;
+}
+  
+.textEditor .ce-block {
+    margin: 1rem 0;
+}
+  
+.textEditor .ce-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+  
+/* Quote Tool */
+.textEditor blockquote {
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-left: 4px solid #3b82f6;
+    font-style: italic;
+    font-size: 1.25rem;
+    color: #374151;
+    margin: 1.5rem 0;
+}
+  
+.textEditor blockquote p {
+    font-size: 1.125rem;
+}
+  
+.textEditor blockquote footer {
+    text-align: right;
+    font-weight: 600;
+    color: #6b7280;
+}
+  
+/* Marker Tool */
+.textEditor .ce-marker {
+    background-color: #fbbf24;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.5rem;
+    color: black;
+    font-weight: 600;
+    text-decoration: underline;
+}
+  
+/* Code Tool */
+.textEditor pre {
+    background-color: #111827;
+    color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+}
+  
+.textEditor code {
+    background-color: #1f2937;
+    color: white;
+    border-radius: 0.375rem;
+    padding: 0.125rem 0.5rem;
+}
+  
+/* Embed Tool */
+.textEditor iframe {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    height: 20rem;
+    max-width: 100%;
+}
+  
+/* Custom styles for the editor container and toolbar */
+.textEditor .ce-toolbar {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem 0.375rem 0 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+  
+/* Show the toolbar on hover */
+.textEditor:hover .ce-toolbar {
+    opacity: 1;
+}
+  
+/* Style for the toolbar buttons */
+.textEditor .ce-toolbar button {
+    background-color: transparent;
+    color: #2563eb;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.textEditor .ce-toolbar button:hover {
+    background-color: #3b82f6;
+    color: white;
+}
+  
+/* For image uploading button or placeholder */
+.textEditor .ce-toolbar__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    transition: all 0.2s ease;
+}
+
+.textEditor .ce-toolbar__button:hover {
+    color: #3b82f6;
+}
+  
+/* Style the editor input blocks */
+.textEditor .ce-block {
+    margin: 1.5rem 0;
+}
+  
+.textEditor .ce-block .ce-paragraph {
+    font-size: 1.125rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+  
+.textEditor .ce-block .ce-header {
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: #111827;
+    margin-bottom: 1rem;
+}
+  
+/* Customize the Placeholder in editor */
+.textEditor .ce-block[data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+}
+  
+/* Apply spacing for elements */
+.textEditor .ce-block + .ce-block {
+    margin-top: 1.5rem;
+}
