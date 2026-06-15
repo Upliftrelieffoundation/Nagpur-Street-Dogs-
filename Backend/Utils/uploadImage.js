@@ -1,8 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-const apiKey = process.env.CLOUDINARY_API_KEY;
-const apiSecret = process.env.CLOUDINARY_API_SECRET;
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'dziwn1wrk';
+const apiKey = process.env.CLOUDINARY_API_KEY || '493848339381675';
+const apiSecret = process.env.CLOUDINARY_API_SECRET || '0OI7gAWXqEet9MgLkgHE9-HMHxw';
 
 console.log("Cloudinary Config Status:", {
   hasCloudName: !!cloudName,

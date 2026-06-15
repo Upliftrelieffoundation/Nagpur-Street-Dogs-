@@ -12,9 +12,9 @@ const blogRouter = express.Router();
 
 // Configure Cloudinary
 cloudinaryV2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dziwn1wrk',
+  api_key: process.env.CLOUDINARY_API_KEY || '493848339381675',
+  api_secret: process.env.CLOUDINARY_API_SECRET || '0OI7gAWXqEet9MgLkgHE9-HMHxw',
 });
 
 // Configure Multer for memory storage
