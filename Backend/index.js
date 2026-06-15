@@ -22,13 +22,14 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'https://nsd-website-oef9.vercel.app',
+  'https://nsd-frontend.vercel.app',
   'https://www.nagpurstreetdog.org',
   'https://nagpurstreetdog.org',
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
