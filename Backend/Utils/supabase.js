@@ -21,14 +21,26 @@ const useMock =
 let supabase;
 
 if (useMock) {
-  console.log('📦 Using Local File Database Fallback (local_db.json)');
+  const isVercel = !!process.env.VERCEL;
+  console.log(isVercel ? '📦 Using In-Memory Database Fallback (Vercel serverless)' : '📦 Using Local File Database Fallback (local_db.json)');
 
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const DB_FILE = path.join(__dirname, '..', 'local_db.json');
 
-  // Initialize database file if it doesn't exist
-  if (!fs.existsSync(DB_FILE)) {
+  let inMemoryDb = {
+    users: [],
+    profiles: [],
+    blogs: [],
+    dogs: [],
+    volunteers: [],
+    donations: [],
+    vet_clinics: [],
+    lost_dogs: []
+  };
+
+  // Initialize database file if it doesn't exist (only if not on Vercel)
+  if (!isVercel && !fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify({
       users: [],
       profiles: [],
@@ -42,6 +54,9 @@ if (useMock) {
   }
 
   const readDB = () => {
+    if (isVercel) {
+      return inMemoryDb;
+    }
     try {
       return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     } catch (e) {
@@ -59,6 +74,10 @@ if (useMock) {
   };
 
   const writeDB = (data) => {
+    if (isVercel) {
+      inMemoryDb = data;
+      return;
+    }
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
   };
 
