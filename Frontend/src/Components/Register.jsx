@@ -20,7 +20,6 @@ function Register() {
     email: '',
     phone: '',
     occupation: '',
-    dob: '',
     password: '',
     confirmPassword: '',
     imageFile: null,
@@ -61,9 +60,9 @@ function Register() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const { name, email, phone, password, confirmPassword, occupation, dob, imageFile } = formData;
+    const { name, email, phone, password, confirmPassword, occupation, imageFile } = formData;
 
-    if (!name || !email || !phone || !password || !confirmPassword || !occupation || !dob) {
+    if (!name || !email || !phone || !password || !confirmPassword || !occupation) {
       toast.error('All fields are required');
       setIsSubmitting(false);
       return;
@@ -88,7 +87,6 @@ function Register() {
     formDataToSend.append('password', password);
     formDataToSend.append('confirmPassword', confirmPassword);
     formDataToSend.append('occupation', occupation);
-    formDataToSend.append('dob', dob);
     if (imageFile) {
       formDataToSend.append('image', imageFile);
     }
@@ -269,24 +267,7 @@ function Register() {
               </div>
             </div>
 
-            {/* DOB */}
-            <div>
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-2">
-                Date of Birth
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  id="dob"
-                  value={formData.dob}
-                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                  className="w-full px-4 py-3 pl-11 glass-input text-gray-800"
-                />
-                <svg className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            </div>
+
 
             {/* Password */}
             <div>

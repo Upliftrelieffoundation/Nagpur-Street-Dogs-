@@ -85,6 +85,7 @@ export async function Register(req, res) {
     return res.status(201).json({
       success: true,
       message: 'User registered successfully. Please check your email to confirm your account.',
+      token: authData.session?.access_token || null,
       user: {
         id: userId,
         name: profile.name,
