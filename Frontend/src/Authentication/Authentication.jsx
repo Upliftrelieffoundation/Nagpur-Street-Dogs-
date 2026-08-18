@@ -76,9 +76,9 @@ export const AuthProvider = ({ children }) => {
           
           // Set user with all necessary properties matching your User schema
           const userData = {
-            _id: decoded._id || decoded.id || decoded.userId,
-            userId: decoded.userId,
-            name: decoded.name,
+            _id: decoded._id || decoded.id || decoded.sub || decoded.userId,
+            userId: decoded.userId || decoded.sub,
+            name: decoded.name || decoded.user_metadata?.full_name || decoded.user_metadata?.name || '',
             email: decoded.email,
             avatar: processAvatarUrl(decoded.image), // Your schema uses 'image' field
             image: decoded.image, // Keep original image field
@@ -128,9 +128,9 @@ export const AuthProvider = ({ children }) => {
       
       // Set user with proper structure matching your User schema
       const userData = {
-        _id: decoded._id || decoded.id || decoded.userId,
-        userId: decoded.userId,
-        name: decoded.name,
+        _id: decoded._id || decoded.id || decoded.sub || decoded.userId,
+        userId: decoded.userId || decoded.sub,
+        name: decoded.name || decoded.user_metadata?.full_name || decoded.user_metadata?.name || '',
         email: decoded.email,
         avatar: processAvatarUrl(decoded.image), // Your schema uses 'image' field
         image: decoded.image, // Keep original image field
