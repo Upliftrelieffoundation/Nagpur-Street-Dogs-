@@ -20,8 +20,9 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-    if (user && user._id) {
-      navigate(`/${user._id}`);
+    const profileId = user?._id || user?.id || user?.userId;
+    if (profileId) {
+      navigate(`/${profileId}`);
     }
     setUserMenuOpen(false);
   };
@@ -69,7 +70,7 @@ const Header = () => {
       </nav>
  
       {/* Primary Donate CTA + User Avatar + Hamburger */}
-      <div className="flex items-center space-x-4 relative z-20">
+      <div className="flex items-center space-x-4 relative z-50">
         <Link
           to="/donate#donate-card"
           className="bg-nsd-orange text-nsd-beige-light px-6 py-2.5 rounded-full font-dm-sans font-bold text-sm tracking-wide hover:bg-nsd-orange-amber transition duration-200 shadow-sm"
@@ -113,20 +114,20 @@ const Header = () => {
 
           {/* User Dropdown Menu */}
           {userMenuOpen && isAuthenticated() && (
-            <div className="absolute right-0 mt-2 w-48 glass-solid py-1 z-50 border">
-              <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                <div className="font-medium">{user.name}</div>
-                <div className="text-gray-500">{user.email}</div>
+            <div className="absolute right-0 mt-2 w-48 bg-[#FFFDF6] border border-[#E4DAC4] rounded-2xl py-2 z-50 shadow-lg text-left">
+              <div className="px-4 py-2 text-xs border-b border-[#E4DAC4] text-gray-500 font-bold uppercase tracking-wider">
+                <div className="text-[#17251E] truncate mb-0.5">{user.name}</div>
+                <div className="truncate font-medium normal-case font-dm-sans">{user.email}</div>
               </div>
               <button
                 onClick={handleProfileClick}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2.5 text-sm text-[#17251E] hover:bg-[#EDE6D3]/40 font-dm-sans font-bold transition-colors cursor-pointer"
               >
                 View Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-[#EDE6D3]/40 font-dm-sans font-bold transition-colors cursor-pointer"
               >
                 Sign Out
               </button>
