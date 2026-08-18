@@ -1,20 +1,50 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ScrollAnimate from '../Animation/ScrollAnimate';
-import goodDoggy from "/home3.png";
-import { 
-  ChevronDown, 
-  Heart, 
-  Users, 
-  Target, 
-  PawPrint, 
-  Home, 
-  Shield, 
-  Dog, 
-  BookOpen,
-  PlusCircle, 
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, Users, Globe, Award, Shield, PawPrint } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ScrollAnimate from '../Animation/ScrollAnimate';
+
+// Animated counter hook
+const useCountUp = (end, duration = 2000, startOnView = true) => {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(!startOnView);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!startOnView) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setHasStarted(true); },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [startOnView]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+    let startTime = null;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * end));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [hasStarted, end, duration]);
+
+  return [count, ref];
+};
+
+const StatNumber = ({ end, suffix = "" }) => {
+  const [count, ref] = useCountUp(end);
+  return (
+    <span ref={ref} className="tabular-nums">
+      {count}{suffix}
+    </span>
+  );
+};
+
+// Image Imports
 import img2020 from '../assets/2020.jpg';
 import img2021 from '../assets/2021.jpg';
 import img2022 from '../assets/2022.jpg';
@@ -22,350 +52,443 @@ import img2023 from '../assets/2023.jpg';
 import img2024 from '../assets/2024.jpg';
 import img2025 from '../assets/2025.jpg';
 
-// Timeline data for each year with images and updated content
-const journeyTimeline = [
-  {
-    year: '2020',
-    title: 'Where It All Began',
-    img: img2020,
-    text: `At just 16 years old, a young animal lover from Nagpur took the first step toward a bigger vision—ensuring care for the voiceless. With only ₹200-₹300 a month from his pocket money, he began feeding and rescuing 10–15 street dogs in his neighborhood. What started as a small act of compassion soon planted the seeds of a movement.`
-  },
-  {
-    year: '2021',
-    title: 'Community Over Individual',
-    img: img2021,
-    text: `Encouraged by a friend, he created an Instagram page to build a like-minded community of young animal lovers. Slowly, passionate students joined the mission. This year marked our first public impact initiative—Radium Belt Distribution for street dogs to prevent night-time accidents, a first-of-its-kind in Nagpur. This initiative became the turning point for our growing presence.`
-  },
-  {
-    year: '2022',
-    title: 'Expanding Care Beyond Food',
-    img: img2022,
-    text: `With more volunteers joining the cause, we realized that food and rescue alone weren’t enough—access to clean drinking water during Nagpur’s scorching summers was a major issue. With a self-funded team of 10 members, we launched our first Free Water Pot Distribution Drive, placing over 100+ pots across the city. The number may have been small, but the impact was immense.`
-  },
-  {
-    year: '2023',
-    title: 'Building a Street + Pet Dog Community',
-    img: img2023,
-    text: `This year, our vision expanded beyond street dogs. We dreamed of building a bridge between pet owners and street animal welfare. While we continued our key initiatives like radium belt and water pot distribution, we also introduced Dog Yoga Sessions, Sunday Community Feeding, and Team Radium Drives. With over 50 active volunteers, we began conducting regular team meetings to brainstorm and plan bigger initiatives.`
-  },
-  {
-    year: '2024',
-    title: 'A City-Wide Impact',
-    img: img2024,
-    text: `This was our breakthrough year. We led Nagpur’s largest self-funded water pot drive, distributing 500+ water pots and installing 3000+ radium belts, directly saving countless lives. We also organized Vidarbha’s First-Ever Dog Holi Party, celebrating our community of pet and street dog lovers alike. Our vision became a city-wide movement.`
-  },
-  {
-    year: '2025',
-    title: 'The Mission Continues...',
-    img: img2025,
-    text: `We're only getting started. With many more innovative, inclusive, and impactful initiatives in the pipeline, Nagpur Street Dogs continues to stand as a youth-led force of compassion, creating a city where every paw matters.`
-  },
-];
+import home2 from "../assets/home2.jpg";
+import feedingDrive from "../assets/feedingDrive.jpg";
+import waterPot from "../assets/waterPot.jpg";
+import radiumBelt from "../assets/radiumBelt.jpg";
+import vaccination from "../assets/vaccination.jpg";
+import adoption from "../assets/adoption.jpg";
+import communityEvent from "../assets/communityEvent.jpg";
 
-const AboutUs = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [expandedSection, setExpandedSection] = useState(null);
-  const [showFullStory, setShowFullStory] = useState(false);
+// Volunteer Photos
+import volunteer1 from "/New photo/IMG-20250603-WA0046~2.jpg";
+import volunteer2 from "/New photo/IMG-20241206-WA0109~2.jpg";
+import volunteer3 from "/New photo/IMG-20250603-WA0050~2.jpg";
+import volunteer4 from "/New photo/IMG-20250604-WA0012~2.jpg";
+import volunteer5 from "/New photo/IMG-20250604-WA0024~2.jpg";
+
+function AboutUs() {
   const navigate = useNavigate();
 
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? "null" : section);
-  };
-
-  const toggleInitiative = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
-
-  // Only keep volunteers in sectionData for the expandable section
-  const sectionData = {
-    volunteers: {
-      icon: <Users className="w-5 h-5" />,
-      title: 'Our Volunteers',
-      content: 'Our incredible team of dedicated volunteers is the heart of our organization. From veterinarians and foster families to fundraisers and advocates, each volunteer brings unique skills and unwavering commitment to our cause.'
-    }
-  };
-
   return (
-    <section className="bg-gradient-to-br from-[#FFEAD0] via-[#FFF8F0] to-[#FFEAD0] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        {/* Hero Section */}
-        <ScrollAnimate animation="fade-up">
-        <div className="text-center mb-16 md:mb-24">
-          <div className="inline-flex items-center justify-center mb-6 bg-[#FFF6EB]/95 text-[#EA580C] border border-orange-200/50 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
-            <PawPrint className="w-4 h-4 mr-2 text-orange-500 fill-current" />
-            ABOUT OUR ORGANIZATION
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
-            Changing <span className="text-[#F97316]">Lives</span>,<br />
-            One <span className="text-[#F97316]">Paw</span> at a Time
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            We are a passionate community dedicated to rescuing, rehabilitating, and rehome stray dogs with love, compassion, and professionalism.
-          </p>
-        </div>
-        </ScrollAnimate>
-
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-12 items-stretch mb-16 md:mb-24">
-          <ScrollAnimate animation="fade-right">
-          <div className="h-full flex flex-col justify-center">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-8 h-1.5 bg-[#F97316] rounded-full inline-block"></span>
-                Our Story
-              </h2>
-              <div className="space-y-4">
-                <div className="text-gray-700 text-lg leading-relaxed space-y-4">
-                  {showFullStory ? (
-                    <>
-                      <p>
-                        Nagpur Street Dogs was founded by a 16-year-old boy in 2020. It is a self-funded youth-driven community dedicated to the welfare, protection, and dignity of street animals across Nagpur. Founded with compassion and driven by action, our mission is to give a voice to the voiceless and build a more humane world—one paw at a time.
-                      </p>
-                      <p>
-                        We work actively on the streets to rescue, rehabilitate, and care for injured, abandoned, and sick dogs. Beyond rescue, we focus on long-term impact through sterilization, vaccination drives, feeding programs, and awareness campaigns.<br/>
-                        NSD is the 1st group in Nagpur city to distribute free water pots every summer. Every summer, we run <b>free water pot distribution</b> drives across Nagpur to ensure that animals have access to clean drinking water during scorching heatwaves—a life-saving initiative supported by our incredible team and community collaborators.<br/>
-                        NSD is the only group to provide <b>Radium belts</b> to the street dogs to reduce the accident cases in Nagpur.
-                      </p>
-                      <p>
-                        Our strength lies in our passionate volunteers, everyday heroes who believe in kindness without conditions. We proudly collaborate with local cafés, small businesses, influencers, educational institutions, and socially conscious brands to build a better environment for our furry friends.
-                      </p>
-                      <p>
-                        At Nagpur Street Dogs, we believe that street animals are not a problem to be solved but lives to be protected. <b>Join us</b> in making Nagpur a safer, kinder place for all beings.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p>
-                        Nagpur Street Dogs was founded by a 16-year-old boy in 2020. It is a self-funded youth-driven community dedicated to the welfare, protection, and dignity of street animals across Nagpur. Founded with compassion and driven by action, our mission is to give a voice to the voiceless and build a more humane world—one paw at a time.
-                        <button onClick={() => setShowFullStory(true)} className="ml-2 text-orange-600 underline hover:text-orange-800 font-bold cursor-pointer">Read more</button>
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* Vertical Metrics Stack with Icon Circles */}
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316] border border-orange-100/50 shadow-sm">
-                  <Heart className="w-5 h-5 fill-current" />
-                </div>
-                <span className="text-gray-700 text-sm md:text-base font-semibold">
-                  <strong className="text-[#F97316] font-black text-base md:text-lg mr-1">950+</strong> Dogs Rescued
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316] border border-orange-100/50 shadow-sm">
-                  <Users className="w-5 h-5" />
-                </div>
-                <span className="text-gray-700 text-sm md:text-base font-semibold">
-                  <strong className="text-[#F97316] font-black text-base md:text-lg mr-1">150+</strong> Active Volunteers
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316] border border-orange-100/50 shadow-sm">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <span className="text-gray-700 text-sm md:text-base font-semibold">
-                  <strong className="text-[#F97316] font-black text-base md:text-lg mr-1">98%</strong> Adoption Success
-                </span>
-              </div>
-            </div>
-          </div>
-          </ScrollAnimate>
+    <div className="min-h-screen bg-[#FFF8EF] text-[#17251E] font-dm-sans selection:bg-[#C1592A]/20">
+      
+      {/* 1. Hero Section */}
+      <section className="pt-4 pb-16 md:pt-6 md:pb-24 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
-          <ScrollAnimate animation="fade-left" delay={200}>
-          <div className="flex items-center justify-center h-full min-h-[350px] lg:min-h-full">
-            <img
-              src={goodDoggy}
-              alt="About us"
-              className="w-full h-full object-contain drop-shadow-md transition-transform duration-500 hover:scale-[1.02]"
-              style={{ maxWidth: '90%', maxHeight: '450px' }}
-            />
-          </div>
-          </ScrollAnimate>
-        </div>
-
-
-        {/* Our Vision & Mission - always visible */}
-        <div className="grid md:grid-cols-2 gap-8 mb-20">
-          <ScrollAnimate animation="fade-right">
-          <div className="bg-white p-8 rounded-3xl shadow-[0_15px_40px_-15px_rgba(249,115,22,0.08)] border border-orange-100/30 transition-all duration-300 hover:shadow-[0_20px_50px_-10px_rgba(249,115,22,0.12)] hover:-translate-y-1">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316] border border-orange-100/50 shadow-sm">
-                <Target className="w-6 h-6" />
-              </div>
-              <h3 className="text-2xl font-black text-gray-900">Our Vision</h3>
-            </div>
-            <div className="text-gray-600 leading-relaxed text-base md:text-lg">
-              Our vision is to make Nagpur a model city for street animal welfare—a place where humans and animals coexist in harmony, safety, and mutual respect.<br/>
-              We envision a future where:
-              <ul className="space-y-3 mt-4">
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2.5 flex-shrink-0"></span>
-                  <span>No stray animal goes hungry, untreated, or ignored.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2.5 flex-shrink-0"></span>
-                  <span>Every citizen is aware and involved in animal welfare.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2.5 flex-shrink-0"></span>
-                  <span>Rescues, treatments, and sterilizations are supported by strong community and volunteer networks.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2.5 flex-shrink-0"></span>
-                  <span>Street animal deaths due to accidents and neglect are drastically reduced through sustainable, preventive solutions.</span>
-                </li>
-              </ul>
-              <br/>
-              We believe real change starts at the grassroots—with empathy, education, and action. Through Nagpur Street Dogs, we aspire to ignite that change and set an example for other cities to follow.
-            </div>
-          </div>
-          </ScrollAnimate>
-          <ScrollAnimate animation="fade-left" delay={200}>
-          <div className="bg-white p-8 rounded-3xl shadow-[0_15px_40px_-15px_rgba(249,115,22,0.08)] border border-orange-100/30 transition-all duration-300 hover:shadow-[0_20px_50px_-10px_rgba(249,115,22,0.12)] hover:-translate-y-1">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316] border border-orange-100/50 shadow-sm">
-                <Heart className="w-6 h-6 fill-current" />
-              </div>
-              <h3 className="text-2xl font-black text-gray-900">Our Mission</h3>
-            </div>
-            <div className="text-gray-600 leading-relaxed text-base md:text-lg space-y-4">
-              <p>
-                At Nagpur Street Dogs, our mission is to create a compassionate and safe environment for street animals by focusing on rescue, rehabilitation, feeding, medical care, sterilization, and awareness. We are committed to being the voice for the voiceless by ensuring that every stray animal in Nagpur gets the right to live with dignity and care.
+          {/* Left Column Text */}
+          <div className="lg:col-span-6 flex flex-col items-start text-left">
+            <ScrollAnimate animation="fade-right">
+              <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">
+                • ABOUT US
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight tracking-tight">
+                Every street dog deserves a chance.
+              </h1>
+              <p className="text-base md:text-lg text-[#3A362E]/90 mb-8 leading-relaxed font-dm-sans max-w-xl">
+                Nagpur Street Dogs is a community-driven initiative rescuing, treating and rehoming stray dogs across Nagpur - built by volunteers, vets and residents.
               </p>
-              <p>
-                Through community-driven efforts, we aim to reduce suffering, prevent cruelty, and inspire responsible action among citizens. Our initiatives—like feeding drives, vaccination camps, radium belt installations, and water pot distributions—are designed not just to help animals survive, but to thrive. We believe in education, collaboration, and action as key tools to build a more inclusive and humane society.
-              </p>
-            </div>
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('be-part-change');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-[#C1592A] hover:text-[#D97706] font-dm-sans font-bold text-sm tracking-wide transition underline underline-offset-8 decoration-2 cursor-pointer"
+              >
+                Get Involved
+              </button>
+            </ScrollAnimate>
           </div>
-          </ScrollAnimate>
-        </div>
 
-        {/* Volunteers - still expandable */}
-        {/**
-        <div className="flex flex-wrap justify-center gap-4 mb-12 md:mb-16">
-          <button
-            onClick={() => toggleSection('volunteers')}
-            className={`flex items-center gap-3 px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
-              expandedSection === 'volunteers'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                : 'bg-white text-orange-600 border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-            }`}
-          >
-            <Users className="w-5 h-5" />
-            Our Volunteers
-            <ChevronDown className={`w-4 h-4 transition-transform ${expandedSection === 'volunteers' ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-        **/}
-
-        {/* {expandedSection === 'volunteers' && (
-          <div className="mb-12 md:mb-16 animate-fadeIn transition-all duration-200">
-            <div className="bg-white p-8 rounded-3xl shadow-xl border-l-4 border-orange-500 hover:shadow-2xl transition-shadow">
-              <h3 className="text-2xl font-bold text-orange-600 mb-4 flex items-center gap-3">
-                <div className="bg-orange-100 p-2 rounded-full">
-                  <Users className="w-5 h-5" />
-                </div>
-                Our Volunteers
-              </h3>
-              <p className="text-gray-700 text-lg leading-relaxed">
-                Our incredible team of dedicated volunteers is the heart of our organization. From veterinarians and foster families to fundraisers and advocates, each volunteer brings unique skills and unwavering commitment to our cause.
-              </p>
-            </div>
+          {/* Right Column Image */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end">
+            <ScrollAnimate animation="fade-left" delay={200}>
+              <img
+                src={volunteer4}
+                alt="Volunteer helping street dog"
+                className="w-full max-w-[480px] aspect-[3/4] object-cover rounded-[3rem] shadow-xl border border-[#E4DAC4]"
+              />
+            </ScrollAnimate>
           </div>
-        )} */}
 
+        </div>
+      </section>
 
-        {/* Animated Timeline: Our Journey – Nagpur Street Dogs */}
-        <div className="relative mb-24 max-w-3xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block mb-3">Timeline</span>
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight leading-tight">
-              Our Journey – <span className="text-[#F97316]">Nagpur Street Dogs</span>
+      {/* 2. Compassion & Community Section */}
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column Image */}
+          <div className="lg:col-span-6">
+            <ScrollAnimate animation="fade-right">
+              <img
+                src={volunteer2}
+                alt="Volunteer with rescued dog"
+                className="w-full aspect-[4/3] object-cover rounded-[2.5rem] shadow-md border border-[#E4DAC4]"
+              />
+            </ScrollAnimate>
+          </div>
+
+          {/* Right Column Text */}
+          <div className="lg:col-span-6 flex flex-col items-start text-left">
+            <ScrollAnimate animation="fade-left" delay={200}>
+              <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight">
+                Built Around Compassion.<br/>Driven By Community.
+              </h2>
+              <p className="text-base md:text-lg text-[#3A362E]/90 leading-relaxed font-dm-sans max-w-xl">
+                Nagpur Street Dogs works alongside volunteers, vets and local residents to rescue, treat and rehome stray dogs - building a safer, more compassionate city for every dog on its streets.
+              </p>
+            </ScrollAnimate>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. Journey Timeline Section */}
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <ScrollAnimate animation="fade-up">
+          <div className="text-left mb-16">
+            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">• OUR JOURNEY</span>
+            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] tracking-tight">
+              From one small act to a<br/>city-wide movement.
             </h2>
           </div>
-          <div className="relative pl-8 md:pl-10 border-l-4 border-orange-200/60 ml-2 md:ml-4">
-            {journeyTimeline.map((item, idx) => (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: idx * 0.05 }}
-                className="mb-16 relative"
-              >
-                {/* Timeline Dot on Axis */}
-                <div className="absolute -left-[38px] md:-left-[46px] top-1.5 w-5 h-5 bg-[#F97316] rounded-full border-4 border-white shadow-md z-10"></div>
-                
-                {/* Content Container */}
-                <div className="flex flex-col">
-                  <h3 className="text-xl md:text-2xl font-black text-[#F97316] mb-2 tracking-tight">
-                    {item.year}: {item.title}
-                  </h3>
-                  <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-4">
-                    {item.text}
-                  </p>
-                  
-                  {/* Journey Image under Description */}
-                  {item.img && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                      className="mt-2"
-                    >
-                      <img
-                        src={item.img}
-                        alt={item.title}
-                        className="w-full max-w-md h-56 object-cover rounded-2xl shadow-md border-4 border-white transition-all duration-300 hover:scale-[1.01]"
-                      />
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        </ScrollAnimate>
 
-        {/* Call to Action */}
-        <ScrollAnimate animation="zoom-in">
-          <div className="mt-20 text-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-16 px-8 md:p-16 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full"></div>
-            <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full"></div>
-            <div className="relative z-10">
-              <h3 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">Ready to Make a Difference?</h3>
-              <p className="text-lg md:text-xl mb-10 opacity-90 max-w-2xl mx-auto leading-relaxed">
-                Join our mission to save lives and create happy endings for dogs in need.
-              </p>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => navigate('/donate')}
-                  className="bg-[#FACC15] hover:bg-[#EAB308] text-gray-900 px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:scale-105 flex items-center gap-2 cursor-pointer"
-                >
-                  <Heart className="w-4 h-4 fill-current text-orange-600" />
-                  Donate Now
-                </button>
+        <div className="relative border-l-2 border-[#E4DAC4]/70 pl-8 md:pl-12 ml-4 md:ml-8 space-y-20 md:space-y-32">
+          
+          {/* Timeline Row 2020 */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-right">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2020</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">Where It All Began</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    Started at age 16 with ₹200-₹300 per month, feeding and rescuing 10-15 street dogs in the neighbourhood. A small act of compassion became the beginning of a larger mission.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6">
+                <ScrollAnimate animation="fade-left" delay={200}>
+                  <img src={img2020} alt="2020 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Row 2021 (Reversed) */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 lg:order-2 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-left">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2021</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">Community Over Individual</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    Created an Instagram community that brought together young animal lovers. Launched the first Radium Belt Distribution initiative in Nagpur to improve street-dog safety.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6 lg:order-1">
+                <ScrollAnimate animation="fade-right" delay={200}>
+                  <img src={img2021} alt="2021 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Row 2022 */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-right">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2022</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">Expanding Care Beyond Food</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    A growing volunteer team launched the first Free Water Pot Distribution Drive, placing 100+ water pots across Nagpur during summer.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6">
+                <ScrollAnimate animation="fade-left" delay={200}>
+                  <img src={img2022} alt="2022 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Row 2023 (Reversed) */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 lg:order-2 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-left">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2023</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">Building a Street + Pet Dog Community</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    Expanded beyond street-dog rescue by connecting pet owners and animal welfare. Introduced Dog Yoga Sessions, Sunday Community Feeding and Team Radium Drives.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6 lg:order-1">
+                <ScrollAnimate animation="fade-right" delay={200}>
+                  <img src={img2023} alt="2023 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Row 2024 */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-right">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2024</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">A City-Wide Impact</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    Distributed 500+ water pots and installed 3000+ radium belts across Nagpur. Organised Vidarbha's first-ever Dog Holi Party.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6">
+                <ScrollAnimate animation="fade-left" delay={200}>
+                  <img src={img2024} alt="2024 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Row 2025 (Reversed) */}
+          <div className="relative">
+            <div className="absolute -left-[41px] md:-left-[57px] w-4.5 h-4.5 rounded-full bg-[#C1592A] border-4 border-[#FFF8EF] top-1.5" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 lg:order-2 text-left flex flex-col items-start">
+                <ScrollAnimate animation="fade-left">
+                  <span className="text-[#C1592A] text-2xl font-manrope font-extrabold block mb-2">2025</span>
+                  <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-4">The Mission Continues</h3>
+                  <p className="text-sm md:text-base text-[#3A362E]/95 font-dm-sans leading-relaxed">
+                    The mission continues with new innovative and inclusive initiatives, driven by a growing youth-led community where every paw matters.
+                  </p>
+                </ScrollAnimate>
+              </div>
+              <div className="lg:col-span-6 lg:order-1">
+                <ScrollAnimate animation="fade-right" delay={200}>
+                  <img src={img2025} alt="2025 milestone" className="w-full h-72 md:h-96 object-cover rounded-[2rem] border border-[#E4DAC4] shadow-sm" />
+                </ScrollAnimate>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 4. Our Impact Statistics Banner */}
+      <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+        <ScrollAnimate animation="fade-up">
+          <div className="bg-[#17251E] text-[#FFF8EF] p-8 md:p-12 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-12 gap-8 items-center shadow-lg">
+            <div className="md:col-span-4 text-left">
+              <h3 className="text-2xl md:text-3xl font-manrope font-extrabold leading-tight">
+                Our Impact
+              </h3>
+            </div>
+            <div className="md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={950} suffix="+" />
+                </div>
+                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Dogs Rescued</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={500} suffix="+" />
+                </div>
+                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Adoptions</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={3000} suffix="+" />
+                </div>
+                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Animals Supported</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={4} suffix="K+" />
+                </div>
+                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Community Reached</div>
               </div>
             </div>
           </div>
         </ScrollAnimate>
-      </div>
+      </section>
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-      `}</style>
-    </section>
+      {/* 5. What We Do Section */}
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <ScrollAnimate animation="fade-up">
+          <div className="text-left mb-16">
+            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">• WHAT WE DO</span>
+            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] leading-tight">
+              Where our work makes a<br/>difference.
+            </h2>
+          </div>
+        </ScrollAnimate>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Card 1 */}
+          <ScrollAnimate animation="fade-up" delay={0}>
+            <div className="flex flex-col text-left group cursor-pointer">
+              <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                <img 
+                  src={vaccination} 
+                  alt="Rescue and Emergency Care" 
+                  className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                  <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">rescue & emergency care</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Rescue & Emergency Care</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Rapid response to injured and at-risk dogs.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 2 */}
+          <ScrollAnimate animation="fade-up" delay={100}>
+            <div className="flex flex-col text-left group cursor-pointer">
+              <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                <img 
+                  src={adoption} 
+                  alt="Medical Support" 
+                  className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                  <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">medical support</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Medical Support</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Treatment, surgery and recovery with partner vets.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 3 */}
+          <ScrollAnimate animation="fade-up" delay={200}>
+            <div className="flex flex-col text-left group cursor-pointer">
+              <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                <img 
+                  src={radiumBelt} 
+                  alt="Sterilization" 
+                  className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                  <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">sterilization</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Sterilization</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Humane population control for long-term welfare.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 4 */}
+          <ScrollAnimate animation="fade-up" delay={300}>
+            <div className="flex flex-col text-left group cursor-pointer">
+              <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                <img 
+                  src={communityEvent} 
+                  alt="Community & Awareness" 
+                  className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                  <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">community & awareness</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Community & Awareness</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Rabies awareness and resident engagement.</p>
+            </div>
+          </ScrollAnimate>
+
+        </div>
+      </section>
+
+      {/* 6. Be Part of the Change Section */}
+      <section id="be-part-change" className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <ScrollAnimate animation="fade-up">
+          <div className="text-left mb-16">
+            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] tracking-tight">
+              Be Part Of The Change.
+            </h2>
+          </div>
+        </ScrollAnimate>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Card 1 */}
+          <ScrollAnimate animation="fade-up" delay={0}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#1B3B2E]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Volunteer</h3>
+              <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Give your time.</p>
+              <button onClick={() => navigate('/volunteer')} className="text-[#17251E] hover:text-[#C1592A] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                Learn More &rarr;
+              </button>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 2 */}
+          <ScrollAnimate animation="fade-up" delay={100}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#C1592A]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Donate</h3>
+              <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Support rescue, food and medical care.</p>
+              <button onClick={() => navigate('/donate')} className="text-[#C1592A] hover:text-[#D97706] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                Learn More &rarr;
+              </button>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 3 */}
+          <ScrollAnimate animation="fade-up" delay={200}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#1B3B2E]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Adopt</h3>
+              <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Give a rescued dog a home.</p>
+              <button onClick={() => navigate('/adopt')} className="text-[#17251E] hover:text-[#C1592A] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                Learn More &rarr;
+              </button>
+            </div>
+          </ScrollAnimate>
+
+        </div>
+      </section>
+
+      {/* 7. Bottom Get Involved CTA Banner */}
+      <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+        <ScrollAnimate animation="fade-up">
+          <div className="bg-[#17251E] text-[#FFF8EF] p-12 md:p-16 rounded-[2.5rem] text-center shadow-lg relative overflow-hidden">
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h3 className="text-3xl md:text-5xl font-manrope font-extrabold leading-tight mb-8">
+                Together, We Can Give Every Dog A Better Tomorrow.
+              </h3>
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('be-part-change');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3.5 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer"
+              >
+                Get Involved
+              </button>
+            </div>
+          </div>
+        </ScrollAnimate>
+      </section>
+
+    </div>
   );
-};
+}
 
 export default AboutUs;
