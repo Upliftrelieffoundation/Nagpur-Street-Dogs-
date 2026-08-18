@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Heart, Users, Globe, Menu, X, ArrowRight, ArrowLeft, Phone, MessageCircle, Award, Shield, PawPrint } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, Users, Globe, ArrowRight, ArrowLeft, MessageCircle, Award, Shield, PawPrint } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import ScrollAnimate from '../Animation/ScrollAnimate';
 
@@ -35,41 +35,27 @@ const useCountUp = (end, duration = 2000, startOnView = true) => {
   return [count, ref];
 };
 
-// Hero Imagessrc/assets/home2.jpg
+const StatNumber = ({ end, suffix = "" }) => {
+  const [count, ref] = useCountUp(end);
+  return (
+    <span ref={ref} className="tabular-nums">
+      {count}{suffix}
+    </span>
+  );
+};
+
+// Image Imports
 import home2 from "../assets/home2.jpg";
 import feedingDrive from "../assets/feedingDrive.jpg";
-
-// Initiative Images
 import waterPot from "../assets/waterPot.jpg";
 import radiumBelt from "../assets/radiumBelt.jpg";
 import vaccination from "../assets/vaccination.jpg";
 import adoption from "../assets/adoption.jpg";
 import communityEvent from "../assets/communityEvent.jpg";
-
 import goodDoggy from "/home1.png";
 import donateIntro from "/home2.png";
 
-
-// Other Images
-// import goodDoggy from "../../public/home1.png"; // Updated path to match the new structure
-// import donateIntro from "../../public/home2.png"; // Updated path to match the new structure
-// ../../public/New photo/New photo/IMG-20250603-WA0046~2.jpg
-// Volunteer Photos C:\Users\RBU\Desktop\Wooferz1\Frontend\public\New photo\IMG-20240918-WA0039(1).jpg
-// import volunteer1 from "../../public/New photo/IMG-20250603-WA0046~2.jpg"; // Updated path to match the new structure
-// import volunteer2 from "../../public/New photo/IMG-20241206-WA0109~2.jpg";
-// import volunteer3 from "../../public/New photo/IMG-20250603-WA0050~2.jpg";
-// import volunteer4 from "../../public/New photo/IMG-20250604-WA0012~2.jpg";
-// import volunteer5 from "../../public/New photo/IMG-20250604-WA0024~2.jpg";
-// import volunteer6 from "../../public/New photo/IMG-20250604-WA0090.jpg";
-// import volunteer7 from "../../public/New photo/IMG-20250604-WA0091.jpg";
-// import volunteer8 from "../../public/New photo/IMG-20250604-WA0101.jpg";
-// import volunteer9 from "../../public/New photo/IMG-20250604-WA0111(1).jpg";
-// import volunteer10 from "../../public/New photo/IMG-20250604-WA0124~2.jpg";
-// import volunteer11 from "../../public/New photo/IMG-20250604-WA0125~2.jpg";
-// import volunteer12 from "../../public/New photo/IMG-20250604-WA0140.jpg";
-// import volunteer13 from "../../public/New photo/IMG-20250604-WA0142.jpg";
-// import volunteer14 from "../../public/New photo/IMG-20250604-WA0148.jpg";
-
+// Volunteer Photos
 import volunteer1 from "/New photo/IMG-20250603-WA0046~2.jpg";
 import volunteer2 from "/New photo/IMG-20241206-WA0109~2.jpg";
 import volunteer3 from "/New photo/IMG-20250603-WA0050~2.jpg";
@@ -85,27 +71,9 @@ import volunteer12 from "/New photo/IMG-20250604-WA0140.jpg";
 import volunteer13 from "/New photo/IMG-20250604-WA0142.jpg";
 import volunteer14 from "/New photo/IMG-20250604-WA0148.jpg";
 
-
-// Animated stat card component
-const StatCard = ({ icon, end, suffix, label }) => {
-  const [count, ref] = useCountUp(end);
-  return (
-    <div ref={ref} className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_15px_40px_-15px_rgba(249,115,22,0.08)] border border-orange-100/30 text-center transition-all duration-300 hover:shadow-[0_20px_50px_-10px_rgba(249,115,22,0.12)] hover:-translate-y-1">
-      <div className="bg-[#FFF6EB] w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-[#F97316]">
-        {icon}
-      </div>
-      <div className="text-3xl md:text-4xl font-extrabold text-[#F97316] mb-2 tabular-nums">
-        {count}{suffix}
-      </div>
-      <div className="text-gray-500 text-xs font-bold uppercase tracking-wider leading-relaxed">{label}</div>
-    </div>
-  );
-};
-
 function Home() {
     const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
 
     // Detect mobile viewport
@@ -120,19 +88,6 @@ function Home() {
     useEffect(() => {
         setCurrentSlide(0);
     }, [isMobile]);
-
-    const heroImages = [
-        {
-            image: feedingDrive,
-            title: "Providing Medical Care",
-            subtitle: "Professional veterinary treatment for every rescued animal"
-        },
-        {
-            image: home2,
-            title: "Every Little Help Counts",
-            subtitle: "Together we can create a better future for street animals."
-        }
-    ];
 
     const initiatives = [
         {
@@ -153,12 +108,12 @@ function Home() {
         {
             image: vaccination,
             title: "Rescue and vaccination",
-            description: "NSD is committed to rescuing all animals in need—whether it's dogs, cows, cats, birds, or any other creatures. We believe every life matters and work tirelessly to offer help and hope to every animal, no matter the species."
+            description: "NSD is committed to rescuing all animals in need - whether it's dogs, cows, cats, birds, or any other creatures. We believe every life matters and work tirelessly to offer help and hope to every animal, no matter the species."
         },
         {
             image: adoption,
             title: "Adoption camp",
-            description: "From the streets to safe homes — our adoption camps connect abandoned and stray dogs with loving families."
+            description: "From the streets to safe homes - our adoption camps connect abandoned and stray dogs with loving families."
         },
         {
             image: communityEvent,
@@ -228,426 +183,586 @@ function Home() {
         }
     };
 
-    // Auto-slide for hero section
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentHeroSlide((prev) => (prev + 1) % heroImages.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, []);
-
     return (
-        <div className="min-h-screen bg-white">
-            {/* Enhanced Hero Section with Image Swiping */}
-            <section id="home" className="relative min-h-screen overflow-hidden">
-                <div className="absolute inset-0">
-                    {heroImages.map((hero, index) => (
-                        <div
-                            key={index}
-                            className={`absolute inset-0 transition-opacity duration-1000 ${currentHeroSlide === index ? 'opacity-100' : 'opacity-0'
-                                }`}
-                            style={{
-                                backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${hero.image}')`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat'
-                            }}
-                        />
-                    ))}
-                </div>
-
-                {/* Hero Content */}
-                <div className="relative z-10 flex items-center min-h-screen pt-16">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                        <div className="max-w-3xl">
-                            <div className="mb-6">
-                                <span className="inline-flex items-center px-4 py-1.5 bg-[#FFF6EB]/90 text-[#EA580C] border border-orange-200/50 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
-                                    <Heart className="w-3.5 h-3.5 mr-1.5 fill-current text-orange-500" />
-                                    Support That Drives Hope
-                                </span>
-                            </div>
-                            <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight">
-                                {heroImages[currentHeroSlide].title}
-                            </h1>
-                            <p className="text-lg md:text-xl text-gray-200/95 mb-10 leading-relaxed max-w-2xl font-normal">
-                                {heroImages[currentHeroSlide].subtitle}
-                            </p>
-                            <div className="flex flex-row gap-4">
-                                <button className="bg-[#F97316] hover:bg-orange-600 text-white px-8 py-3.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-lg hover:shadow-orange-500/25 transform hover:-translate-y-0.5 cursor-pointer" onClick={() => navigate('/donate')}>
-                                    DONATE NOW
-                                </button>
-                                <button className="border-2 border-white/80 hover:border-white text-white hover:bg-white/10 px-8 py-3.5 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer" onClick={() => navigate('/about')}>
-                                    LEARN MORE
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Hero Navigation Dots */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="flex space-x-3">
-                        {heroImages.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCurrentHeroSlide(index)}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${currentHeroSlide === index
-                                        ? 'bg-orange-500 w-8'
-                                        : 'bg-white/50 hover:bg-white/70'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </section>
-            {/* Enhanced Stats Section */}
-            <section className="py-24 bg-[#FAF5EA] relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <ScrollAnimate animation="fade-up">
-                        <div className="text-center mb-16">
-                            <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block mb-3">Our Impact in Numbers</span>
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight">Making a difference, one life at a time</h2>
-                        </div>
-                    </ScrollAnimate>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto">
-                        <ScrollAnimate animation="zoom-in" delay={0}><StatCard icon={<Heart className="w-6 h-6 text-[#F97316]" />} end={950} suffix="+" label="Rescue Cases" /></ScrollAnimate>
-                        <ScrollAnimate animation="zoom-in" delay={100}><StatCard icon={<Award className="w-6 h-6 text-[#F97316]" />} end={500} suffix="+" label="Adoptions" /></ScrollAnimate>
-                        <ScrollAnimate animation="zoom-in" delay={200}><StatCard icon={<Shield className="w-6 h-6 text-[#F97316]" />} end={3000} suffix="+" label="Radium Belts Distributed" /></ScrollAnimate>
-                        <ScrollAnimate animation="zoom-in" delay={300}><StatCard icon={<Globe className="w-6 h-6 text-[#F97316]" />} end={5} suffix="k+" label="Community Members" /></ScrollAnimate>
-                    </div>
-                </div>
-            </section>
-
-            {/* Enhanced About Us Section */}
-            <section id="about" className="py-24 bg-white relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid lg:grid-cols-2 gap-16 items-center">
-                        <ScrollAnimate animation="fade-right">
-                            <div className="relative p-4">
-                                <img
-                                    src={goodDoggy}
-                                    alt="About us"
-                                    className="rounded-[3rem] rounded-tl-[8rem] rounded-br-[8rem] w-full object-cover shadow-[0_25px_60px_-15px_rgba(249,115,22,0.15)] border-8 border-[#FAF5EA]"
-                                />
-                                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-orange-100 rounded-full opacity-60 -z-10 animate-pulse"></div>
-                                <div className="absolute -top-4 -left-4 w-24 h-24 bg-orange-200 rounded-full opacity-40 -z-10"></div>
-                            </div>
-                        </ScrollAnimate>
-                        <ScrollAnimate animation="fade-left" delay={200}>
-                            <div>
-                                <div className="mb-6">
-                                    <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block mb-2">Our Story</span>
-                                    <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mt-1 mb-6">About Us</h2>
-                                </div>
-                                <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
-                                    <p>
-                                        Nagpur street dogs is a self funded youth community founded by a 16 year old boy in 2020.
-                                        We focus on providing food , medical care, free water pots every summer, shelter and many more to the animals in need.
-                                        Through our dedicated efforts, we aim to create a safer and kinder environment for street Animals.
-                                    </p>
-                                    <p>
-                                        We focus on providing comprehensive care including food, water, medical treatment, and shelter. Our dedicated team works tirelessly to make every summer and winter more comfortable for street animals while advocating for better policies to create a stable, nurturing environment for all animals in need.
-                                    </p>
-                                    <div className="flex flex-row gap-6 md:gap-8 pt-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316]">
-                                                <Heart className="w-5 h-5 fill-current" />
-                                            </div>
-                                            <span className="font-extrabold text-gray-800 tracking-wide text-sm md:text-base">Compassionate Care</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#FFF6EB] flex items-center justify-center text-[#F97316]">
-                                                <Users className="w-5 h-5" />
-                                            </div>
-                                            <span className="font-extrabold text-gray-800 tracking-wide text-sm md:text-base">Community Driven</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </ScrollAnimate>
-                    </div>
-                </div>
-            </section>
-
-            {/* Enhanced Our Initiatives Section */}
-            <section id="initiatives" className="py-24 bg-[#F8F9FA] relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <ScrollAnimate animation="fade-up">
-                        <div className="text-center mb-16">
-                            <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block mb-3">Our Initiatives</span>
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">Our Initiatives</h2>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                                Comprehensive programs designed to rescue, rehabilitate, and rehome street animals
-                            </p>
-                        </div>
-                    </ScrollAnimate>
- 
-                    <div className="relative max-w-6xl mx-auto px-4">
-                        <div className="overflow-hidden rounded-3xl shadow-xl"
-                            onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                        >
-                            <div className="flex transition-transform duration-500 ease-in-out"
-                                style={{ transform: `translateX(-${currentSlide * (isMobile ? 100 : 100 / 3)}%)` }}>
-                                {initiatives.map((initiative, index) => (
-                                    <div
-                                        key={index}
-                                        className={`flex-shrink-0 relative px-2.5 group cursor-pointer ${isMobile ? 'w-full' : 'w-1/3'}`}
-                                        style={{ zIndex: 1 }}
-                                    >
-                                        <div className="overflow-hidden rounded-2xl relative shadow-md">
-                                            <img
-                                                src={initiative.image}
-                                                alt={initiative.title}
-                                                className="w-full h-80 md:h-[480px] object-cover transition-transform duration-700 group-hover:scale-105"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end items-start p-6 md:p-8 transition-all duration-500">
-                                                <h3 className="text-lg md:text-2xl font-extrabold z-10 text-[#F97316] mb-2 uppercase tracking-wide drop-shadow-md">
-                                                    {initiative.title}
-                                                </h3>
-                                                <p
-                                                    className={`text-xs md:text-sm text-gray-200 z-10 overflow-hidden leading-relaxed transition-all duration-500 ${
-                                                        isMobile
-                                                            ? 'opacity-100 max-h-40'
-                                                            : 'opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-40'
-                                                    }`}
-                                                >
-                                                    {initiative.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
- 
-                        {/* Navigation Arrows */}
-                        <button
-                            onClick={prevSlide}
-                            className="absolute left-2 md:-left-6 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white text-[#F97316] border border-orange-100/50 flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-orange-50 hover:scale-110 active:scale-95 z-20 cursor-pointer"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={nextSlide}
-                            className="absolute right-2 md:-right-6 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white text-[#F97316] border border-orange-100/50 flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-orange-50 hover:scale-110 active:scale-95 z-20 cursor-pointer"
-                        >
-                            <ArrowRight className="w-5 h-5" />
-                        </button>
- 
-                        {/* Dots Indicator */}
-                        <div className="flex justify-center mt-10 space-x-2">
-                            {Array.from({ length: isMobile ? initiatives.length : Math.ceil(initiatives.length / 3) }).map((_, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setCurrentSlide(isMobile ? index : index)}
-                                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${currentSlide === index ? 'bg-[#F97316] w-6' : 'bg-gray-300 hover:bg-gray-400 w-2'
-                                        }`}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Parent Foundation Section */}
-            <section className="py-20 bg-[#FFFDF6] border-y border-orange-100/50 relative overflow-hidden">
-                {/* Floating Paw Prints to create the mockup pattern */}
-                <PawPrint className="absolute left-8 top-8 w-24 h-24 text-orange-500/5 rotate-12 pointer-events-none" />
-                <PawPrint className="absolute right-12 bottom-6 w-32 h-32 text-orange-500/5 -rotate-12 pointer-events-none" />
-                <PawPrint className="absolute left-1/3 bottom-4 w-16 h-16 text-orange-500/5 rotate-45 pointer-events-none" />
-                <PawPrint className="absolute right-1/4 top-6 w-20 h-20 text-orange-500/5 -rotate-45 pointer-events-none" />
-                
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <ScrollAnimate animation="fade-up">
-                        <span 
-                            onClick={() => window.open('https://upliftrelieffoundation.org', '_blank')}
-                            className="text-[#EA580C] hover:text-orange-600 cursor-pointer text-xs font-extrabold uppercase tracking-widest block mb-3 transition-colors"
-                        >
-                            OUR PARENT FOUNDATION
-                        </span>
-                        <h2 
-                            onClick={() => window.open('https://upliftrelieffoundation.org', '_blank')}
-                            className="text-3xl md:text-5xl font-black text-gray-900 hover:text-orange-500 cursor-pointer mb-8 tracking-tight transition-colors"
-                        >
-                            UPLIFT RELIEF FOUNDATION
-                        </h2>
-                        <button 
-                            onClick={() => window.open('https://upliftrelieffoundation.org', '_blank')} 
-                            className="inline-flex items-center gap-2 bg-[#F97316] hover:bg-orange-600 text-white px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-orange-500/25 transform hover:-translate-y-0.5 cursor-pointer"
-                        >
-                            Learn more about it
-                            <ArrowRight className="w-4 h-4" />
-                        </button>
-                    </ScrollAnimate>
-                </div>
-            </section>
-
-            {/* Enhanced Donation Section */}
-            <section id="donate" className="py-24 bg-gradient-to-br from-[#FFFDF9] via-[#FAF4E8] to-[#FFF9EE] relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-16 items-center">
-                        <ScrollAnimate animation="fade-right">
-                        <div>
-                            <div className="mb-8">
-                                <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block mb-2">Make a Difference</span>
-                                <h2 className="text-3xl md:text-5xl font-black text-gray-900 mt-2 mb-4 tracking-tight leading-tight">
-                                    Together we can save lives
-                                </h2>
-                                <p className="text-lg md:text-xl font-bold text-[#F97316]">
-                                    Be The Reason Someone Smiles Today
-                                </p>
-                            </div>
- 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <button className="bg-[#F97316] hover:bg-orange-600 text-white py-4 rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-orange-500/20 transform hover:-translate-y-1 hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/donate')}>
-                                    ₹150
-                                </button>
-                                <button className="bg-[#F97316] hover:bg-orange-600 text-white py-4 rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-orange-500/20 transform hover:-translate-y-1 hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/donate')}>
-                                    ₹500
-                                </button>
-                                <button className="bg-[#F97316] hover:bg-orange-600 text-white py-4 rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-orange-500/20 transform hover:-translate-y-1 hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/donate')}>
-                                    ₹1000
-                                </button>
-                                <button className="bg-[#F97316] hover:bg-orange-600 text-white py-4 rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-orange-500/20 transform hover:-translate-y-1 hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/donate')}>
-                                    ₹5000
-                                </button>
-                            </div>
- 
-                            <div className="bg-[#FFF6EB] border border-orange-200/60 p-6 rounded-2xl shadow-sm">
-                                <p className="text-[#EA580C] text-base md:text-lg font-extrabold mb-1.5 flex items-center gap-2">
-                                    💝 "Want To Know Where Your Donation Goes? Just Ask!"
-                                </p>
-                                <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                                    Complete transparency on how your contribution helps save lives
-                                </p>
-                            </div>
-                        </div>
-                        </ScrollAnimate>
- 
-                        <ScrollAnimate animation="fade-left" delay={200}>
-                        <div className="relative p-4">
-                            <img
-                                src={donateIntro}
-                                alt="Happy rescued dog"
-                                className="rounded-[2.5rem] shadow-2xl border-8 border-white w-full object-cover"
-                            />
-                            <div className="absolute -bottom-2 -right-2 w-32 h-32 bg-orange-100 rounded-full opacity-60 -z-10 animate-pulse"></div>
-                            <div className="absolute -top-2 -left-2 w-24 h-24 bg-orange-200 rounded-full opacity-40 -z-10"></div>
-                        </div>
-                        </ScrollAnimate>
-                    </div>
-                </div>
-            </section>
-
-            {/* Enhanced WhatsApp Community Section */}
-            <section className="py-20 bg-gradient-to-r from-orange-500 to-[#EA580C] relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <ScrollAnimate animation="flip-up">
-                    <div className="max-w-3xl mx-auto">
-                        <h3 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                            Join Our Community
-                        </h3>
-                        <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-                            Connect with like-minded animal lovers, get updates on rescues, and be part of our mission to create a better world for street animals.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <a href="https://whatsapp.com/channel/0029VatlZaQ2P59rLcuPt90o" target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#20ba5a] text-white px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-green-500/20 transform hover:-translate-y-0.5 cursor-pointer">
-                                <MessageCircle className="mr-2 w-5 h-5 fill-current" />
-                                Join WhatsApp Community
-                            </a>
-                            <a href="https://www.instagram.com/nagpur_street_dogs?igsh=MXdubWFuN2F6Z3ppeA==" target="_blank" rel="noopener noreferrer" className="border-2 border-white/80 hover:border-white text-white hover:bg-white/10 px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-300 shadow-md transform hover:-translate-y-0.5 cursor-pointer">
-                                Follow on Instagram
-                            </a>
-                        </div>
-                    </div>
-                    </ScrollAnimate>
-                </div>
-            </section>
+        <div className="min-h-screen bg-[#FFF8EF] text-[#17251E] font-dm-sans selection:bg-[#C1592A]/20">
             
-            {/* Call to Action */}
-            <div className="max-w-6xl mx-auto px-4 mt-20">
-                <ScrollAnimate animation="zoom-in">
-                    <div className="text-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-16 px-8 md:p-16 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full"></div>
-                        <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full"></div>
-                        <div className="relative z-10">
-                            <h3 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">Ready to Make a Difference?</h3>
-                            <p className="text-lg md:text-xl mb-10 opacity-90 max-w-2xl mx-auto leading-relaxed">
-                                Join our mission to save lives and create happy endings for dogs in need.
+            {/* 1. Hero Section */}
+            <section className="pt-4 pb-16 md:pt-6 md:pb-24 max-w-7xl mx-auto px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                    
+                    {/* Left Hero Column */}
+                    <div className="lg:col-span-6 flex flex-col items-start text-left">
+                        <ScrollAnimate animation="fade-right">
+                            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">
+                                • SUPPORT THAT DRIVES HOPE
+                            </span>
+                            <h1 className="text-5xl md:text-7xl font-manrope font-extrabold text-[#17251E] mb-6 leading-[1.1] tracking-tight">
+                                Every little help<br/>counts<span className="text-[#C1592A]">.</span>
+                            </h1>
+                            <p className="text-base md:text-lg text-[#3A362E]/90 mb-10 leading-relaxed font-dm-sans max-w-xl">
+                                Together we can create a better future for street animals - one rescue, one meal, one home at a time.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <button onClick={() => { navigate("/adopt") }} className="bg-white text-[#F97316] hover:bg-orange-50 px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:scale-105 flex items-center gap-2 cursor-pointer">
-                                    <Heart className="w-4 h-4 fill-current text-orange-500" />
-                                    Adopt a Dog
-                                </button>
-                                <button onClick={() => { navigate("/volunteer") }} className="bg-[#FACC15] hover:bg-[#EAB308] text-gray-900 px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:scale-105 flex items-center gap-2 cursor-pointer">
-                                    <Users className="w-4 h-4" />
-                                    Become a Volunteer
-                                </button>
-                                <button onClick={() => { navigate("/donate") }} className="border-2 border-white text-white hover:bg-white/10 px-8 py-3.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:scale-105 flex items-center gap-2 cursor-pointer">
-                                    <PawPrint className="w-4 h-4" />
+                            <div className="flex flex-row items-center">
+                                <button 
+                                    onClick={() => navigate('/donate')} 
+                                    className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3.5 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5"
+                                >
                                     Donate Now
                                 </button>
+                                <button 
+                                    onClick={() => {
+                                        const el = document.getElementById('about');
+                                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                    }} 
+                                    className="text-[#17251E] hover:text-[#C1592A] font-dm-sans font-bold text-sm tracking-wide transition ml-8 underline underline-offset-8 decoration-2"
+                                >
+                                    Learn More
+                                </button>
+                            </div>
+                        </ScrollAnimate>
+                    </div>
+
+                    {/* Right Hero Collage Column */}
+                    <div className="lg:col-span-6 relative flex justify-center lg:justify-end pr-4">
+                        <ScrollAnimate animation="fade-left" delay={200}>
+                            <div className="relative w-full max-w-[480px]">
+                                {/* Main Image */}
+                                <img
+                                    src={feedingDrive}
+                                    alt="Feeding drive moment"
+                                    className="w-full aspect-[4/3] md:aspect-square object-cover rounded-[3rem] shadow-xl border-4 border-[#FFF8EF]"
+                                />
+                                
+                                {/* Bottom Left Overlapping Circle */}
+                                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-[#FFF8EF] shadow-lg overflow-hidden absolute -bottom-6 -left-6 transform hover:scale-105 transition duration-300">
+                                    <img 
+                                        src={home2} 
+                                        alt="Happy street dog" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+
+                                {/* Bottom Right Overlapping Circle */}
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#FFF8EF] shadow-lg overflow-hidden absolute -bottom-4 -right-4 transform hover:scale-105 transition duration-300">
+                                    <img 
+                                        src={volunteerPhotos[2]} 
+                                        alt="Volunteers helping a dog" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </div>
+                        </ScrollAnimate>
+                    </div>
+
+                </div>
+            </section>
+
+            {/* 2. Impact Statistics Banner */}
+            <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+                <ScrollAnimate animation="fade-up">
+                    <div className="bg-[#17251E] text-[#FFF8EF] p-8 md:p-12 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-12 gap-8 items-center shadow-lg">
+                        <div className="md:col-span-4 text-left">
+                            <h3 className="text-2xl md:text-3xl font-manrope font-extrabold leading-tight">
+                                What we've done together,<br className="hidden md:inline"/> so far.
+                            </h3>
+                        </div>
+                        <div className="md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div>
+                                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                                    <StatNumber end={950} suffix="+" />
+                                </div>
+                                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Dogs Rescued</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                                    <StatNumber end={500} suffix="+" />
+                                </div>
+                                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Adoptions</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                                    <StatNumber end={3000} suffix="+" />
+                                </div>
+                                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Animals Supported</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl md:text-4xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                                    <StatNumber end={4} suffix="K+" />
+                                </div>
+                                <div className="text-xs md:text-sm font-dm-sans opacity-70 uppercase tracking-widest">Community Reached</div>
                             </div>
                         </div>
                     </div>
                 </ScrollAnimate>
-            </div>
+            </section>
 
-            {/* Gallery Section */}
-            <section className="bg-white py-24 border-t border-orange-100/30">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <ScrollAnimate animation="fade-up">
-                        <span className="text-[#EA580C] text-sm font-extrabold uppercase tracking-widest block text-center mb-3">Moments</span>
-                        <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-12 text-center tracking-tight">Gallery</h2>
-                    </ScrollAnimate>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 p-2 md:p-5">
-                        {/* Large featured photo */}
-                        <div className="col-span-2 row-span-2 relative group overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500">
+            {/* 3. Who We Are Section */}
+            <section id="about" className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                    
+                    {/* Left Column Image */}
+                    <div className="lg:col-span-6">
+                        <ScrollAnimate animation="fade-right">
                             <img
-                                src={volunteerPhotos[0]}
-                                alt="Featured volunteer moment"
-                                className="w-full h-full min-h-[280px] md:min-h-[450px] object-cover transition-transform duration-700 group-hover:scale-105"
+                                src={waterPot}
+                                alt="Dog drinking water from NSD pot"
+                                className="w-full aspect-[4/3] object-cover rounded-[2.5rem] shadow-md border border-[#E4DAC4]"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6 md:p-8">
-                                <h3 className="text-lg md:text-2xl font-extrabold text-white uppercase tracking-wider">Making Impact Together</h3>
-                            </div>
+                        </ScrollAnimate>
+                    </div>
+
+                    {/* Right Column Text */}
+                    <div className="lg:col-span-6 flex flex-col items-start text-left">
+                        <ScrollAnimate animation="fade-left" delay={200}>
+                            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">
+                                • WHO WE ARE
+                            </span>
+                            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight">
+                                Every street dog deserves a chance.
+                            </h2>
+                            <p className="text-base md:text-lg text-[#3A362E]/90 mb-8 leading-relaxed font-dm-sans">
+                                Nagpur Street Dogs is a community-driven initiative rescuing, treating and rehoming stray dogs across the city. We work alongside volunteers, vets and local residents to build a safer, more compassionate Nagpur for every dog on its streets.
+                            </p>
+                            <button 
+                                onClick={() => navigate('/about')}
+                                className="text-[#C1592A] hover:text-[#D97706] font-dm-sans font-bold text-sm tracking-wide transition underline underline-offset-8 decoration-2"
+                            >
+                                Learn More
+                            </button>
+                        </ScrollAnimate>
+                    </div>
+
+                </div>
+            </section>
+
+            {/* 4. What We Do Section */}
+            <section className="py-16 md:py-24 bg-[#FFF8EF]">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8">
+                    <ScrollAnimate animation="fade-up">
+                        <div className="text-center mb-16">
+                            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">• WHAT WE DO</span>
+                            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] leading-tight">
+                                Direct, hands-on care for<br/>every dog we meet.
+                            </h2>
                         </div>
-
-                        {/* Medium photos */}
-                        {volunteerPhotos.slice(1, 3).map((photo, index) => (
-                            <div key={index} className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-lg transition-all duration-500">
-                                <img
-                                    src={photo}
-                                    alt="Volunteer moment"
-                                    className="w-full h-32 md:h-64 object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-orange-600/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                                    <Heart className="w-8 h-8 text-white fill-current animate-bounce" />
+                    </ScrollAnimate>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        
+                        {/* Card 1 */}
+                        <ScrollAnimate animation="fade-up" delay={0}>
+                            <div className="flex flex-col text-left group cursor-pointer">
+                                <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                                    <img 
+                                        src={vaccination} 
+                                        alt="Rescue and Emergency Care" 
+                                        className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                                        <div className="absolute top-6 left-6 bg-[#C1592A] text-[#FFF8EF] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm font-dm-sans">01</div>
+                                        <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">rescue & emergency care</span>
+                                    </div>
                                 </div>
+                                <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Rescue & Emergency Care</h3>
+                                <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Rapid response to injured and at-risk dogs across the city.</p>
                             </div>
-                        ))}
-
-                        {/* Small photos */}
-                        {volunteerPhotos.slice(3, 13).map((photo, index) => (
-                            <div key={index} className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-lg transition-all duration-500">
-                                <img
-                                    src={photo}
-                                    alt="Volunteer moment"
-                                    className="w-full h-32 md:h-48 object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-black/50 group-hover:bg-[#F97316]/90 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100 p-2 text-center">
-                                    <span className="text-white font-bold text-xs md:text-sm uppercase tracking-wider">NSD Family</span>
+                        </ScrollAnimate>
+ 
+                        {/* Card 2 */}
+                        <ScrollAnimate animation="fade-up" delay={100}>
+                            <div className="flex flex-col text-left group cursor-pointer">
+                                <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                                    <img 
+                                        src={adoption} 
+                                        alt="Medical Support" 
+                                        className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                                        <div className="absolute top-6 left-6 bg-[#C1592A] text-[#FFF8EF] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm font-dm-sans">02</div>
+                                        <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">medical support</span>
+                                    </div>
                                 </div>
+                                <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Medical Support</h3>
+                                <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Ongoing treatment, surgery and recovery with professional veterinary care.</p>
                             </div>
-                        ))}
+                        </ScrollAnimate>
+ 
+                        {/* Card 3 */}
+                        <ScrollAnimate animation="fade-up" delay={200}>
+                            <div className="flex flex-col text-left group cursor-pointer">
+                                <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                                    <img 
+                                        src={radiumBelt} 
+                                        alt="Sterilization" 
+                                        className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                                        <div className="absolute top-6 left-6 bg-[#C1592A] text-[#FFF8EF] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm font-dm-sans">03</div>
+                                        <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">sterilization</span>
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Sterilization</h3>
+                                <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Humane population control to reduce suffering and improve long-term welfare.</p>
+                            </div>
+                        </ScrollAnimate>
+ 
+                        {/* Card 4 */}
+                        <ScrollAnimate animation="fade-up" delay={300}>
+                            <div className="flex flex-col text-left group cursor-pointer">
+                                <div className="overflow-hidden rounded-[2rem] aspect-[4/3] relative border border-[#E4DAC4] shadow-sm">
+                                    <img 
+                                        src={communityEvent} 
+                                        alt="Community & Awareness" 
+                                        className="w-full h-full object-cover transition duration-750 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-black/45 flex items-center justify-center p-6 text-center">
+                                        <div className="absolute top-6 left-6 bg-[#C1592A] text-[#FFF8EF] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm font-dm-sans">04</div>
+                                        <span className="text-base md:text-lg font-manrope font-extrabold text-[#FFF8EF] uppercase tracking-wider">community & awareness</span>
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mt-6 mb-2">Community & Awareness</h3>
+                                <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Rabies awareness, feeding drives and resident engagement across Nagpur.</p>
+                            </div>
+                        </ScrollAnimate>
+ 
                     </div>
                 </div>
             </section>
 
+            {/* 5. Parent Foundation Banner Row */}
+            <section className="max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4] mt-12 py-12">
+                <ScrollAnimate animation="fade-up">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-full bg-[#17251E] text-[#FFF8EF] flex items-center justify-center font-manrope font-extrabold text-lg">U</div>
+                            <span className="font-manrope font-extrabold text-lg text-[#17251E]">Uplift Relief Foundation</span>
+                        </div>
+                        <div className="max-w-2xl text-left">
+                            <span className="text-[#C1592A] text-[10px] font-bold uppercase tracking-widest block mb-1">A PART OF SOMETHING BIGGER</span>
+                            <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">
+                                Nagpur Street Dogs is an initiative of Uplift Relief Foundation, working towards a more compassionate society through animal welfare, community engagement and meaningful action.
+                            </p>
+                        </div>
+                        <div>
+                            <a href="https://upliftrelieffoundation.org" target="_blank" rel="noopener noreferrer" className="text-[#17251E] hover:text-[#C1592A] font-dm-sans font-bold text-sm tracking-wide transition underline underline-offset-8 decoration-2 flex-shrink-0">
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                </ScrollAnimate>
+            </section>
 
+            {/* 6. Community Section */}
+            <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                    
+                    {/* Left side text */}
+                    <div className="lg:col-span-6 flex flex-col items-start text-left">
+                        <ScrollAnimate animation="fade-right">
+                            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">
+                                • COMMUNITY
+                            </span>
+                            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight">
+                                Be part of our community.
+                            </h2>
+                            <p className="text-base md:text-lg text-[#3A362E]/90 mb-10 leading-relaxed font-dm-sans">
+                                Real change happens when a community comes together. Join us in creating a safer, kinder city for every street dog.
+                            </p>
+                            <div className="flex flex-wrap gap-4">
+                                <button 
+                                    onClick={() => navigate('/volunteer')} 
+                                    className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-6 py-3 rounded-full font-dm-sans font-bold text-sm tracking-wide transition shadow-sm"
+                                >
+                                    Join as a Volunteer
+                                </button>
+                                <a 
+                                    href="https://whatsapp.com/channel/0029VatlZaQ2P59rLcuPt90o" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="border-2 border-[#17251E] hover:bg-[#17251E]/5 text-[#17251E] px-6 py-3 rounded-full font-dm-sans font-bold text-sm tracking-wide transition text-center"
+                                >
+                                    Join Our Community
+                                </a>
+                                <button 
+                                    onClick={() => navigate('/donate')} 
+                                    className="border-2 border-[#17251E] hover:bg-[#17251E]/5 text-[#17251E] px-6 py-3 rounded-full font-dm-sans font-bold text-sm tracking-wide transition text-center"
+                                >
+                                    Support Our Work
+                                </button>
+                            </div>
+                        </ScrollAnimate>
+                    </div>
+
+                    {/* Right side Image / Card */}
+                    <div className="lg:col-span-6">
+                        <ScrollAnimate animation="fade-left" delay={200}>
+                            <img
+                                src={communityEvent}
+                                alt="NSD community event"
+                                className="w-full aspect-[4/3] object-cover rounded-[2.5rem] shadow-md border border-[#E4DAC4]"
+                            />
+                        </ScrollAnimate>
+                    </div>
+
+                </div>
+            </section>
+
+            {/* 7. Life at NSD (Gallery Section) */}
+            <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+                <ScrollAnimate animation="fade-up">
+                    <div className="text-left mb-12">
+                        <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-2 tracking-tight">Life at NSD.</h2>
+                        <p className="text-base text-[#3A362E]/80 font-dm-sans">
+                            A glimpse into the rescues, recoveries, and moments that make the work worth it.
+                        </p>
+                    </div>
+                </ScrollAnimate>
+
+                {/* Custom Grid matching Figma Wireframe */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    
+                    {/* Grid item 1 (rescue moment) - spans 2 columns & 2 rows */}
+                    <div className="md:col-span-2 md:row-span-2 overflow-hidden rounded-3xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-square">
+                        <img 
+                            src={volunteerPhotos[0]} 
+                            alt="Rescue moment" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                            <span className="text-white font-manrope font-bold text-lg uppercase tracking-wide">Rescue Moment</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 2 (rescued dog) */}
+                    <div className="overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[1]} 
+                            alt="Rescued dog" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Rescued Dog</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 3 (medical care) */}
+                    <div className="overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[2]} 
+                            alt="Medical care" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Medical Care</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 4 (volunteers) */}
+                    <div className="overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[3]} 
+                            alt="Volunteers" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Volunteers</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 5 (feeding drive) */}
+                    <div className="overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[4]} 
+                            alt="Feeding drive" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Feeding Drive</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 6 (adoption moment) - spans 2 columns */}
+                    <div className="md:col-span-2 overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[2/1] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[5]} 
+                            alt="Adoption moment" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Adoption Moment</span>
+                        </div>
+                    </div>
+
+                    {/* Grid item 7 (community activity) */}
+                    <div className="overflow-hidden rounded-2xl border border-[#E4DAC4] shadow-sm relative group aspect-[4/3] md:aspect-auto md:h-52">
+                        <img 
+                            src={volunteerPhotos[6]} 
+                            alt="Community activity" 
+                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span className="text-white font-manrope font-bold text-sm uppercase tracking-wide">Community Activity</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            {/* 8. Get Involved (Three Ways to Help) */}
+            <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+                <ScrollAnimate animation="fade-up">
+                    <div className="text-left mb-16">
+                        <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">• GET INVOLVED</span>
+                        <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] tracking-tight">
+                            Three ways to help right now.
+                        </h2>
+                    </div>
+                </ScrollAnimate>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    {/* Card 1 */}
+                    <ScrollAnimate animation="fade-up" delay={0}>
+                        <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+                            <div className="w-4 h-4 rounded-full bg-[#C1592A]" />
+                            <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Donate</h3>
+                            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Support rescue, food and medical care.</p>
+                            <button onClick={() => navigate('/donate')} className="text-[#C1592A] hover:text-[#D97706] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                                Learn More &rarr;
+                            </button>
+                        </div>
+                    </ScrollAnimate>
+
+                    {/* Card 2 */}
+                    <ScrollAnimate animation="fade-up" delay={100}>
+                        <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+                            <div className="w-4 h-4 rounded-full bg-[#1B3B2E]" />
+                            <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Volunteer</h3>
+                            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Give your time, skills and energy.</p>
+                            <button onClick={() => navigate('/volunteer')} className="text-[#17251E] hover:text-[#C1592A] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                                Learn More &rarr;
+                            </button>
+                        </div>
+                    </ScrollAnimate>
+
+                    {/* Card 3 */}
+                    <ScrollAnimate animation="fade-up" delay={200}>
+                        <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+                            <div className="w-4 h-4 rounded-full bg-[#C1592A]" />
+                            <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Adopt</h3>
+                            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Provide temporary care and a safe home.</p>
+                            <button onClick={() => navigate('/adopt')} className="text-[#C1592A] hover:text-[#D97706] font-bold text-xs mt-6 uppercase tracking-wider font-dm-sans transition-colors cursor-pointer">
+                                Learn More &rarr;
+                            </button>
+                        </div>
+                    </ScrollAnimate>
+
+                </div>
+            </section>
+
+            {/* 9. Your Support Can Save a Life Banner */}
+            <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+                <ScrollAnimate animation="fade-up">
+                    <div className="bg-[#17251E] text-[#FFF8EF] p-8 md:p-16 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-12 gap-8 items-center shadow-lg relative overflow-hidden">
+                        
+                        {/* Text and CTA */}
+                        <div className="md:col-span-7 text-left flex flex-col items-start">
+                            <h3 className="text-3xl md:text-5xl font-manrope font-extrabold leading-tight mb-4">
+                                Your support can save a life.
+                            </h3>
+                            <p className="text-base text-white/80 font-dm-sans mb-8 max-w-md">
+                                Every contribution helps us rescue, treat and care for street dogs.
+                            </p>
+                            <button 
+                                onClick={() => navigate('/donate')}
+                                className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3.5 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5"
+                            >
+                                Donate Now
+                            </button>
+                        </div>
+
+                        {/* Image Box */}
+                        <div className="md:col-span-5 flex justify-center md:justify-end">
+                            <img
+                                src={donateIntro}
+                                alt="Happy rescued dog"
+                                className="w-full max-w-[340px] aspect-[4/3] object-cover rounded-3xl border border-[#E4DAC4]"
+                            />
+                        </div>
+
+                    </div>
+                </ScrollAnimate>
+            </section>
+
+            {/* 10. Let's Stay in Touch Section (Contact Form) */}
+            <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4] my-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                    
+                    {/* Left Column info */}
+                    <div className="lg:col-span-5 text-left flex flex-col items-start">
+                        <ScrollAnimate animation="fade-right">
+                            <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">• GET IN TOUCH</span>
+                            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight">
+                                Let's stay in touch.
+                            </h2>
+                            <p className="text-base md:text-lg text-[#3A362E]/90 mb-8 leading-relaxed font-dm-sans">
+                                For rescue support, volunteering, adoption or general enquiries, we'd love to hear from you.
+                            </p>
+                            <div className="space-y-2 font-dm-sans text-sm text-[#3A362E] mb-8">
+                                <p>Nagpur, Maharashtra, India</p>
+                                <p className="font-bold text-[#17251E]">hello@nagpurstreetdogs.org</p>
+                            </div>
+                            <div className="flex gap-4 font-dm-sans text-sm text-[#17251E] font-bold">
+                                <a href="https://www.instagram.com/nagpur_street_dogs?igsh=MXdubWFuN2F6Z3ppeA==" target="_blank" rel="noopener noreferrer" className="hover:text-[#C1592A] transition">Instagram</a>
+                                <a href="https://whatsapp.com/channel/0029VatlZaQ2P59rLcuPt90o" target="_blank" rel="noopener noreferrer" className="hover:text-[#C1592A] transition">Facebook</a>
+                            </div>
+                        </ScrollAnimate>
+                    </div>
+
+                    {/* Right Column Form */}
+                    <div className="lg:col-span-7 w-full">
+                        <ScrollAnimate animation="fade-left" delay={200}>
+                            <form className="bg-[#FFF8EF] p-8 md:p-10 rounded-[2rem] border border-[#E4DAC4] shadow-sm flex flex-col space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="flex flex-col text-left">
+                                        <label className="text-xs font-bold text-[#17251E] uppercase tracking-wide mb-2 font-dm-sans">Name</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Your Name" 
+                                            className="w-full bg-[#FFFDF9]/60 border border-[#E4DAC4] rounded-xl px-4 py-3 font-dm-sans text-sm text-[#17251E] placeholder:text-[#3A362E]/40 focus:outline-none focus:border-[#C1592A] transition-colors"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                        <label className="text-xs font-bold text-[#17251E] uppercase tracking-wide mb-2 font-dm-sans">Email</label>
+                                        <input 
+                                            type="email" 
+                                            placeholder="Your Email Address" 
+                                            className="w-full bg-[#FFFDF9]/60 border border-[#E4DAC4] rounded-xl px-4 py-3 font-dm-sans text-sm text-[#17251E] placeholder:text-[#3A362E]/40 focus:outline-none focus:border-[#C1592A] transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <label className="text-xs font-bold text-[#17251E] uppercase tracking-wide mb-2 font-dm-sans">Message</label>
+                                    <textarea 
+                                        rows="4" 
+                                        placeholder="How can we help?" 
+                                        className="w-full bg-[#FFFDF9]/60 border border-[#E4DAC4] rounded-xl px-4 py-3 font-dm-sans text-sm text-[#17251E] placeholder:text-[#3A362E]/40 focus:outline-none focus:border-[#C1592A] transition-colors resize-none"
+                                    />
+                                </div>
+                                <div className="text-left">
+                                    <button 
+                                        type="submit" 
+                                        onClick={(e) => e.preventDefault()}
+                                        className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3 rounded-full font-dm-sans font-bold text-sm tracking-wide transition shadow-sm w-full md:w-auto"
+                                    >
+                                        Send Message
+                                    </button>
+                                </div>
+                            </form>
+                        </ScrollAnimate>
+                    </div>
+
+                </div>
+            </section>
 
         </div>
     );
