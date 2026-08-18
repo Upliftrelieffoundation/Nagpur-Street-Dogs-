@@ -1,528 +1,595 @@
-import React, { useState } from 'react';
-import { Heart, Users, Globe, Sparkles, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, Users, Shield, Check, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ScrollAnimate from '../Animation/ScrollAnimate';
 
+// Animated counter hook
+const useCountUp = (end, duration = 2000, startOnView = true) => {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(!startOnView);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!startOnView) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setHasStarted(true); },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [startOnView]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+    let startTime = null;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * end));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [hasStarted, end, duration]);
+
+  return [count, ref];
+};
+
+const StatNumber = ({ end, suffix = "" }) => {
+  const [count, ref] = useCountUp(end);
+  return (
+    <span ref={ref} className="tabular-nums">
+      {count}{suffix}
+    </span>
+  );
+};
+
+// Volunteer Photos
+const volunteerPhotos = [
+  "/New photo/IMG-20250604-WA0090.jpg",
+  "/New photo/IMG-20250604-WA0133.jpg",
+  "/New photo/IMG-20250603-WA0050~2.jpg",
+  "/New photo/IMG-20250604-WA0079.jpg",
+  "/New photo/IMG-20250604-WA0148.jpg",
+  "/New photo/IMG-20250604-WA0093.jpg",
+  "/New photo/IMG-20250604-WA0140.jpg",
+  "/New photo/IMG-20250604-WA0088.jpg",
+  "/New photo/IMG-20250604-WA0101.jpg",
+  "/New photo/IMG-20241206-WA0109~2.jpg",
+  "/New photo/IMG-20250316-WA0019.jpg",
+  "/New photo/IMG-20250604-WA0139.jpg",
+  "/New photo/IMG-20250604-WA0097.jpg"
+];
+
+const interestOptions = [
+  "Rescue & Emergency Care",
+  "Feeding & Animal Care",
+  "Adoption Support",
+  "Events & Awareness",
+  "Social Media & Content",
+  "Fundraising & Outreach",
+  "Photography / Videography",
+  "Other"
+];
+
+const availabilityOptions = [
+  "Weekdays",
+  "Weekends",
+  "Both",
+  "Flexible"
+];
+
 function VolunteerPage() {
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    skills: '',
+    whyJoin: ''
+  });
+  
+  const [selectedInterests, setSelectedInterests] = useState([]);
+  const [selectedAvailability, setSelectedAvailability] = useState('Flexible');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleInterestToggle = (interest) => {
+    setSelectedInterests(prev => 
+      prev.includes(interest) 
+        ? prev.filter(i => i !== interest)
+        : [...prev, interest]
+    );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      alert('Please enter your full name');
+      return;
+    }
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    if (!formData.phone.trim() || !/^[0-9]{10,15}$/.test(formData.phone)) {
+      alert('Please enter a valid phone number');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Build layout payload that satisfies backend constraints while retaining user inputs
+      const addressDetails = [
+        `Interests: ${selectedInterests.join(', ')}`,
+        `Availability: ${selectedAvailability}`,
+        formData.skills ? `Skills: ${formData.skills}` : '',
+        formData.whyJoin ? `Why: ${formData.whyJoin}` : ''
+      ].filter(Boolean).join(' | ');
+
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        city: formData.city.trim() || 'Nagpur',
+        address: addressDetails.substring(0, 250), // Fallback address stores custom volunteer info
+        state: 'Maharashtra',
+        country: 'India',
+        pincode: '440001'
+      };
+
+      const serverDomain = import.meta.env.VITE_SERVER_DOMAIN || 'https://nsd-backend-api.vercel.app';
+      const response = await fetch(`${serverDomain}/api/volunteer/createVolunteer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      toast.success('Registration successful! Thank you for volunteering.');
+      
+      // Reset form
+      setFormData({
         name: '',
         email: '',
         phone: '',
-        address: '',
         city: '',
-        state: '',
-        country: '',
-        pincode: ''
-    });
-
-    const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
-   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Client-side validation
-    if (!formData.name.trim()) {
-        alert('Please enter your full name');
-        return;
-    }
-
-    if (!formData.email.trim()) {
-        alert('Please enter your email address');
-        return;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        alert('Please enter a valid email address');
-        return;
-    }
-
-    if (!formData.phone.trim()) {
-        alert('Please enter your phone number');
-        return;
-    } else if (!/^[0-9]{10,15}$/.test(formData.phone)) {
-        alert('Please enter a valid phone number (10-15 digits)');
-        return;
-    }
-
-    if (!formData.address.trim()) {
-        alert('Please enter your address');
-        return;
-    }
-
-    if (!formData.city.trim()) {
-        alert('Please enter your city');
-        return;
-    }
-
-    if (!formData.state.trim()) {
-        alert('Please enter your state');
-        return;
-    }
-
-    if (!formData.country.trim()) {
-        alert('Please enter your country');
-        return;
-    }
-
-    if (!formData.pincode.trim()) {
-        alert('Please enter your pincode');
-        return;
-    } else if (!/^[0-9]{4,10}$/.test(formData.pincode)) {
-        alert('Please enter a valid pincode (4-10 digits)');
-        return;
-    }
-
-    try {
-        // Prepare form data to send
-        const formDataToSend = {
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone.trim(),
-            address: formData.address.trim(),
-            city: formData.city.trim(),
-            state: formData.state.trim(),
-            country: formData.country.trim(),
-            pincode: formData.pincode.trim()
-        };
-
-        const response = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/api/volunteer/createVolunteer`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formDataToSend),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
-        }
-
-        // Reset form on successful submission
-        setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            address: '',
-            city: '',
-            state: '',
-            country: '',
-            pincode: ''
-        });
-
-        toast.success('Registration successful! Thank you for volunteering.');
+        skills: '',
+        whyJoin: ''
+      });
+      setSelectedInterests([]);
+      setSelectedAvailability('Flexible');
 
     } catch (error) {
-        console.error('Registration error:', error);
-        toast.error(error.message || 'An error occurred during registration. Please try again.');
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-};
-    const volunteerPhotos = [
-        "/New photo/IMG-20250604-WA0090.jpg",
-        "/New photo/IMG-20250604-WA0133.jpg",
-        "/New photo/IMG-20250603-WA0050~2.jpg",
-        "/New photo/IMG-20250604-WA0079.jpg",
-        "/New photo/IMG-20250604-WA0148.jpg",
-        "/New photo/IMG-20250604-WA0093.jpg",
-        "/New photo/IMG-20250604-WA0140.jpg",
-        "/New photo/IMG-20250604-WA0088.jpg",
-        "/New photo/IMG-20250604-WA0101.jpg",
-        "/New photo/IMG-20241206-WA0109~2.jpg",
-        "/New photo/IMG-20250316-WA0019.jpg",
-        "/New photo/IMG-20250604-WA0139.jpg",
-        "/New photo/IMG-20250604-WA0097.jpg"
-        
-    ];
+  };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-            {/* Hero Section with Background Image */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-10 pb-10">
-                {/* Background Image with Overlay */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/New photo/IMG-20250604-WA0043.jpg"
-                        alt="Volunteers helping community"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-900/50 to-amber-900/50"></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                </div>
+  return (
+    <div className="min-h-screen bg-[#FFF8EF] text-[#17251E] font-dm-sans selection:bg-[#C1592A]/20">
+      
+      {/* 1. Hero Section */}
+      <section className="pt-4 pb-16 md:pt-6 md:pb-24 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column Text */}
+          <div className="lg:col-span-6 flex flex-col items-start text-left">
+            <ScrollAnimate animation="fade-right">
+              <span className="text-[#C1592A] text-xs font-bold uppercase tracking-widest block mb-4">
+                • VOLUNTEER
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight tracking-tight">
+                Be the voice for the voiceless.
+              </h1>
+              <p className="text-base md:text-lg text-[#3A362E]/90 mb-8 leading-relaxed font-dm-sans max-w-xl">
+                Your time, skills and compassion can make a real difference in the lives of street animals across Nagpur.
+              </p>
+              <div className="flex flex-row items-center">
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById('join-form');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3.5 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer"
+                >
+                  Become a Volunteer
+                </button>
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById('what-can-do');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-[#17251E] hover:text-[#C1592A] font-dm-sans font-bold text-sm tracking-wide transition ml-8 underline underline-offset-8 decoration-2 cursor-pointer"
+                >
+                  Learn More
+                </button>
+              </div>
+            </ScrollAnimate>
+          </div>
 
-                {/* Floating Elements */}
-                <div className="absolute top-20 left-10 animate-bounce">
-                    <div className="w-4 h-4 bg-amber-400 rounded-full opacity-60"></div>
-                </div>
-                <div className="absolute top-40 right-20 animate-pulse">
-                    <div className="w-6 h-6 bg-orange-300 rounded-full opacity-40"></div>
-                </div>
-                <div className="absolute bottom-40 left-20 animate-bounce delay-1000">
-                    <Sparkles className="w-8 h-8 text-amber-300 opacity-50" />
-                </div>
+          {/* Right Column Image */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end">
+            <ScrollAnimate animation="fade-left" delay={200}>
+              <img
+                src={volunteerPhotos[1]}
+                alt="Volunteers with rescued dogs"
+                className="w-full max-w-[480px] aspect-[4/3] object-cover rounded-[3rem] shadow-xl border border-[#E4DAC4]"
+              />
+            </ScrollAnimate>
+          </div>
 
-                {/* Hero Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <div className="animate-fade-in-up">
-                        <div className="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-6 py-2 mb-8 border border-white/30">
-                            <Heart className="w-5 h-5 text-white mr-2 fill-current" />
-                            <span className="text-white font-medium">Join 10,000+ Active Volunteers</span>
-                        </div>
-                        
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-tight">
-                            <span className="block">Make a</span>
-                            <span className="block bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 bg-clip-text text-transparent">
-                                Difference
-                            </span>
-                            <span className="block">Today</span>
-                        </h1>
-                        
-                        <p className="text-xl md:text-2xl text-amber-100 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-                            Join our community of passionate volunteers and help us build a better world together. 
-                            Every moment you give creates ripples of positive change.
-                        </p>
-                        
-                        <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
-                            <a href="#volunteer-form" className="group bg-gradient-to-r from-amber-500 to-orange-500 text-white px-10 py-5 rounded-2xl text-xl font-semibold hover:from-amber-600 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-amber-500/25 transform hover:scale-105 hover:-translate-y-1">
-                                <span className="flex items-center justify-center">
-                                    Get Started Now
-                                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                            </a>
-                            <button className="group backdrop-blur-sm bg-white/20 border-2 border-white/40 text-white px-10 py-5 rounded-2xl text-xl font-semibold hover:bg-white/30 transition-all duration-300 transform hover:scale-105">
-                                <span className="flex items-center justify-center">
-                                    Watch Our Story
-                                    <div className="ml-3 w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                                </span>
-                            </button>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                            <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-6 border border-white/20">
-                                <div className="text-3xl font-bold text-white mb-2">10,000+</div>
-                                <div className="text-amber-200">Active Volunteers</div>
-                            </div>
-                            <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-6 border border-white/20">
-                                <div className="text-3xl font-bold text-white mb-2">50,000+</div>
-                                <div className="text-amber-200">Lives Impacted</div>
-                            </div>
-                            <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-6 border border-white/20">
-                                <div className="text-3xl font-bold text-white mb-2">100+</div>
-                                <div className="text-amber-200">Communities Served</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Scroll Indicator */}
-                <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-                    <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-                        <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Main Content Section */}
-            <section className="py-24 relative overflow-hidden" id="volunteer-form">
-                {/* Decorative background elements */}
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-white to-amber-50"></div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-orange-200/30 to-transparent rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-amber-200/30 to-transparent rounded-full blur-3xl"></div>
-                
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-16 items-start">
-                        {/* Left Column - Enhanced Info */}
-                        <ScrollAnimate animation="fade-right">
-                        <div className="space-y-10 lg:sticky lg:top-32">
-                            <div className="space-y-6">
-                                <div className="inline-flex items-center bg-gradient-to-r from-orange-100 to-amber-100 rounded-full px-6 py-2.5 shadow-sm">
-                                    <span className="text-orange-600 font-semibold text-sm tracking-wide">🐾 JOIN OUR PACK</span>
-                                </div>
-                                
-                                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
-                                    Every Paw Needs a
-                                    <span className="block text-transparent bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text">
-                                        Helping Hand
-                                    </span>
-                                </h2>
-                                <p className="text-lg text-gray-600 leading-relaxed">
-                                    Be part of Nagpur's biggest street dog welfare movement. 
-                                    Your time and compassion can save lives.
-                                </p>
-                            </div>
-
-                            <div className="space-y-5">
-                                <div className="group flex items-start space-x-5 p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-orange-100 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-200/50">
-                                        <Heart className="w-7 h-7 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-1">Rescue & Rehabilitate</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            Help rescue injured and abandoned dogs from the streets. Your hands can heal wounded paws.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="group flex items-start space-x-5 p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-orange-100 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-200/50">
-                                        <Users className="w-7 h-7 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-1">Community Drives</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            Join feeding drives, water pot distributions, and radium belt campaigns across Nagpur.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="group flex items-start space-x-5 p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-orange-100 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-200/50">
-                                        <Globe className="w-7 h-7 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-1">Spread Awareness</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            Educate others about animal welfare and build a kinder, more compassionate Nagpur.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        </ScrollAnimate>
-
-                        {/* Right Column - Enhanced Form */}
-                        <ScrollAnimate animation="fade-left" delay={200}>
-                        <div className="relative">
-                            <div className="absolute -top-6 -left-6 w-72 h-72 bg-gradient-to-br from-orange-200 to-amber-200 rounded-full opacity-20 blur-3xl"></div>
-                            <div className="absolute -bottom-6 -right-6 w-56 h-56 bg-gradient-to-tl from-orange-300 to-amber-100 rounded-full opacity-15 blur-3xl"></div>
-                            <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-2xl shadow-orange-100/50 border border-orange-100/50">
-                                <div className="text-center mb-8">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-orange-300/40 rotate-3 hover:rotate-0 transition-transform duration-300">
-                                        <Sparkles className="w-8 h-8 text-white" />
-                                    </div>
-                                    <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Become a Volunteer</h3>
-                                    <p className="text-gray-500">Join 150+ passionate dog lovers making a difference</p>
-                                </div>
-
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                    {/* Full Name */}
-                                    <div>
-                                        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
-                                        <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange}
-                                            className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                            placeholder="Enter your full name" required />
-                                    </div>
-
-                                    {/* Email & Phone in 2 columns */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
-                                            <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="your@email.com" required />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
-                                            <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="+91 9876543210" required />
-                                        </div>
-                                    </div>
-
-                                    {/* Address */}
-                                    <div>
-                                        <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-1.5">Street Address</label>
-                                        <textarea id="address" name="address" value={formData.address} onChange={handleInputChange} rows={2}
-                                            className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none resize-none"
-                                            placeholder="House No., Street, Area" required></textarea>
-                                    </div>
-
-                                    {/* City & State in 2 columns */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
-                                            <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="Your city" required />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-1.5">State</label>
-                                            <input type="text" id="state" name="state" value={formData.state} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="Your state" required />
-                                        </div>
-                                    </div>
-
-                                    {/* Country & Pincode in 2 columns */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">Country</label>
-                                            <input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="Your country" required />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="pincode" className="block text-sm font-semibold text-gray-700 mb-1.5">Pincode</label>
-                                            <input type="text" id="pincode" name="pincode" value={formData.pincode} onChange={handleInputChange}
-                                                className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 outline-none"
-                                                placeholder="Zip code" required />
-                                        </div>
-                                    </div>
-
-                                    {/* Submit Button */}
-                                    <button type="submit"
-                                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-4 px-8 rounded-xl font-bold text-lg shadow-xl shadow-orange-200/50 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2">
-                                        <Heart className="w-5 h-5" />
-                                        Submit Application
-                                        <ArrowRight className="w-5 h-5" />
-                                    </button>
-                                </form>
-
-                                <p className="text-center text-sm text-gray-400 mt-4">
-                                    We'll get back to you within 24 hours 💌
-                                </p>
-                            </div>
-                        </div>
-                        </ScrollAnimate>
-                    </div>
-                </div>
-            </section>
-
-            {/* Enhanced Photo Gallery Section */}
-            <section className="py-24 bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full">
-                    <div className="absolute top-20 left-10 w-32 h-32 bg-orange-200 rounded-full opacity-10 blur-2xl"></div>
-                    <div className="absolute bottom-20 right-10 w-40 h-40 bg-amber-200 rounded-full opacity-10 blur-2xl"></div>
-                </div>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                    <ScrollAnimate animation="fade-up">
-                    <div className="text-center mb-20">
-                        <div className="inline-flex items-center bg-white rounded-full px-6 py-2 mb-6 shadow-lg">
-                            <span className="text-orange-600 font-semibold">📸 GALLERY</span>
-                        </div>
-                        <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                            Memories That
-                            <span className="block text-transparent bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text">
-                                Matter
-                            </span>
-                        </h2>
-                        <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-                            Capturing the joy and impact our volunteers create through shared moments of kindness and community
-                        </p>
-                    </div>
-                    </ScrollAnimate>
-
-                    {/* Enhanced Photo Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        {/* Large featured photo */}
-                        <div className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-700">
-                            <img
-                                src={volunteerPhotos[0]}
-                                alt="Featured volunteer moment"
-                                className="w-full h-full min-h-[150px] object-cover transition-transform duration-1000 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-                            <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-700">
-                                <h3 className="text-3xl font-bold text-white mb-3">Making Impact Together</h3>
-                                <p className="text-amber-200 text-lg">Community service event in Mumbai</p>
-                            </div>
-                        </div>
-
-                        {/* Medium photos */}
-                        {volunteerPhotos.slice(1, 5).map((photo, index) => (
-                            <div key={index} className="relative group overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500">
-                                <img
-                                    src={photo}
-                                    alt={`Volunteer moment ${index + 1}`}
-                                    className="w-full h-70 object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-orange-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-6">
-                                    <Heart className="w-10 h-10 text-white fill-current" />
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Small photos */}
-                        {volunteerPhotos.slice(5, 13).map((photo, index) => (
-                            <div key={index} className="relative group overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500">
-                                <img
-                                    src={photo}
-                                    alt={`Volunteer moment ${index + 4}`}
-                                    className="w-full h-50 object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-orange-600/80 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <span className="text-white font-semibold text-center px-4">Making Impact Together</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Footer Section */}
-            {/* <footer className="bg-gradient-to-br from-orange-900 to-amber-900 text-white py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                        <div className="md:col-span-2">
-                            <h3 className="text-3xl font-bold mb-6">Volunteer Connect</h3>
-                            <p className="text-orange-100 mb-6 text-lg leading-relaxed">
-                                We connect passionate volunteers with meaningful opportunities to create positive change in communities around the world.
-                            </p>
-                            <div className="flex space-x-4">
-                                <a href="https://www.facebook.com/nagpurstreetdogs" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center hover:bg-orange-700 transition-colors">
-                                    <span className="sr-only">Facebook</span>
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                                    </svg>
-                                </a>
-                                <a href="https://www.instagram.com/nagpur_street_dogs?igsh=MXdubWFuN2F6Z3ppeA==" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center hover:bg-orange-700 transition-colors">
-                                    <span className="sr-only">Instagram</span>
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                                    </svg>
-                                </a>
-                                <a href="https://x.com/nagpur_street_dogs" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-orange-800 rounded-full flex items-center justify-center hover:bg-orange-700 transition-colors">
-                                    <span className="sr-only">Twitter</span>
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-semibold mb-6">Quick Links</h4>
-                            <ul className="space-y-3">
-                                <li><a href="/" className="text-orange-100 hover:text-white transition-colors">Home</a></li>
-                                <li><a href="/about" className="text-orange-100 hover:text-white transition-colors">About Us</a></li>
-                                <li><a href="#volunteer-form" className="text-orange-100 hover:text-white transition-colors">Volunteer</a></li>
-                                <li><a href="/community" className="text-orange-100 hover:text-white transition-colors">Events</a></li>
-                                <li><a href="/founder" className="text-orange-100 hover:text-white transition-colors">Contact</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-semibold mb-6">Contact Us</h4>
-                            <address className="not-italic text-orange-100">
-                                <p className="mb-3">123 Volunteer Street</p>
-                                <p className="mb-3">Mumbai, MH 400001</p>
-                                <p className="mb-3">India</p>
-                                <p className="mb-3">Email: info@volunteerconnect.org</p>
-                                <p>Phone: +91 9876543210</p>
-                            </address>
-                        </div>
-                    </div>
-                    <div className="border-t border-orange-800 mt-12 pt-8 text-center text-orange-300">
-                        <p>© {new Date().getFullYear()} Volunteer Connect. All rights reserved.</p>
-                    </div>
-                </div>
-            </footer> */}
         </div>
-    );
+      </section>
+
+      {/* 2. Why volunteer with us Section */}
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <ScrollAnimate animation="fade-up">
+          <div className="text-left mb-16">
+            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] tracking-tight">
+              Why volunteer with us.
+            </h2>
+          </div>
+        </ScrollAnimate>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Card 1 */}
+          <ScrollAnimate animation="fade-up" delay={0}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#C1592A]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Make a Difference</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Help rescue, feed, treat and protect animals who need us most.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 2 */}
+          <ScrollAnimate animation="fade-up" delay={100}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#1B3B2E]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Meet Like-Minded People</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Join a growing community of people who care about animal welfare.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 3 */}
+          <ScrollAnimate animation="fade-up" delay={200}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#C1592A]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Learn & Grow</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Gain real-world experience through rescue and community initiatives.</p>
+            </div>
+          </ScrollAnimate>
+
+          {/* Card 4 */}
+          <ScrollAnimate animation="fade-up" delay={300}>
+            <div className="bg-[#FFFDF6] p-8 rounded-3xl border border-[#E4DAC4] text-left shadow-sm flex flex-col items-start h-full">
+              <div className="w-4 h-4 rounded-full bg-[#1B3B2E]" />
+              <h3 className="text-xl font-manrope font-extrabold text-[#17251E] mb-2 mt-6">Be Part of Change</h3>
+              <p className="text-sm text-[#3A362E]/80 font-dm-sans leading-relaxed">Help build a kinder and more compassionate Nagpur.</p>
+            </div>
+          </ScrollAnimate>
+
+        </div>
+      </section>
+
+      {/* 3. What you can do Section */}
+      <section id="what-can-do" className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <ScrollAnimate animation="fade-up">
+          <div className="text-left mb-16">
+            <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] tracking-tight">
+              What you can do.
+            </h2>
+          </div>
+        </ScrollAnimate>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 border-t border-[#E4DAC4] pt-12">
+          
+          {/* Item 1 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">01 Rescue Support</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Help with rescue operations and emergency situations.</p>
+          </div>
+
+          {/* Item 2 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">02 Feeding & Care</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Support feeding drives and daily animal care.</p>
+          </div>
+
+          {/* Item 3 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">03 Events & Awareness</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Participate in campaigns, community events and drives.</p>
+          </div>
+
+          {/* Item 4 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">04 Social Media & Content</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Spread the mission through content and photography.</p>
+          </div>
+
+          {/* Item 5 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">05 Fundraising & Outreach</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Connect the organization with supporters and communities.</p>
+          </div>
+
+          {/* Item 6 */}
+          <div className="text-left">
+            <span className="text-xs font-bold text-[#C1592A] uppercase tracking-widest block mb-2">06 Foster & Adoption Support</span>
+            <p className="text-sm text-[#3A362E]/85 font-dm-sans leading-relaxed">Help rescued animals find temporary or permanent homes.</p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 4. More hands. More hope. More lives saved Statistics Box */}
+      <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+        <ScrollAnimate animation="fade-up">
+          <div className="bg-[#17251E] text-[#FFF8EF] p-8 md:p-12 rounded-[2.5rem] shadow-lg flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-8 border-b border-[#FFF8EF]/20 pb-8">
+              <div className="lg:col-span-6 text-left">
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-manrope font-extrabold leading-tight">
+                  More hands. More hope.<br/>More lives saved.
+                </h3>
+                <p className="text-xs md:text-sm font-dm-sans opacity-70 mt-4 leading-relaxed max-w-md">
+                  Every rescue, every meal and every adoption becomes possible when a community comes together.
+                </p>
+              </div>
+              <div className="lg:col-span-6 flex justify-end">
+                <img 
+                  src={volunteerPhotos[2]} 
+                  alt="Volunteer community" 
+                  className="w-full max-w-[420px] h-48 md:h-56 object-cover rounded-[2rem] border border-[#FFF8EF]/10" 
+                />
+              </div>
+            </div>
+
+            {/* Impact stats row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+              <div>
+                <div className="text-2xl md:text-3xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={950} suffix="+" />
+                </div>
+                <div className="text-[10px] md:text-xs font-dm-sans opacity-70 uppercase tracking-widest">Dogs Rescued</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={500} suffix="+" />
+                </div>
+                <div className="text-[10px] md:text-xs font-dm-sans opacity-70 uppercase tracking-widest">Adoptions</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={3000} suffix="+" />
+                </div>
+                <div className="text-[10px] md:text-xs font-dm-sans opacity-70 uppercase tracking-widest">Animals Supported</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-manrope font-extrabold text-[#C1592A] mb-1">
+                  <StatNumber end={4} suffix="K+" />
+                </div>
+                <div className="text-[10px] md:text-xs font-dm-sans opacity-70 uppercase tracking-widest">Community Reached</div>
+              </div>
+            </div>
+          </div>
+        </ScrollAnimate>
+      </section>
+
+      {/* 5. Ready to Join Form Section */}
+      <section id="join-form" className="py-16 md:py-24 max-w-7xl mx-auto px-6 lg:px-8 border-t border-[#E4DAC4]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          
+          {/* Left Column Text */}
+          <div className="lg:col-span-5 flex flex-col items-start text-left">
+            <ScrollAnimate animation="fade-right">
+              <h2 className="text-3xl md:text-5xl font-manrope font-extrabold text-[#17251E] mb-6 leading-tight">
+                Ready to join<br/>the team?
+              </h2>
+              <p className="text-sm md:text-base text-[#3A362E]/90 mb-8 leading-relaxed font-dm-sans max-w-md">
+                Tell us a little about yourself and how you'd like to help. Every volunteer makes a real difference.
+              </p>
+              <img 
+                src={volunteerPhotos[0]} 
+                alt="Volunteer collage impact visual" 
+                className="w-full aspect-[4/3] object-cover rounded-[2.5rem] border border-[#E4DAC4]" 
+              />
+            </ScrollAnimate>
+          </div>
+
+          {/* Right Column Form Card */}
+          <div className="lg:col-span-7">
+            <ScrollAnimate animation="fade-left" delay={200}>
+              <div className="bg-[#FFFDF6] p-8 md:p-10 rounded-[2.5rem] border border-[#E4DAC4] text-left shadow-sm">
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  
+                  {/* Inputs row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">Full Name *</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Enter your name"
+                        className="w-full px-5 py-3 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">Email Address *</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="Enter your email"
+                        className="w-full px-5 py-3 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">Phone Number *</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="Enter phone number"
+                        className="w-full px-5 py-3 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">City / Area *</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        placeholder="e.g. Virar, Nagpur"
+                        className="w-full px-5 py-3 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Interests Pill Tags */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-3">Volunteer Interests</label>
+                    <div className="flex flex-wrap gap-2">
+                      {interestOptions.map(option => {
+                        const isSelected = selectedInterests.includes(option);
+                        return (
+                          <button
+                            type="button"
+                            key={option}
+                            onClick={() => handleInterestToggle(option)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 border cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#FFF8EF] border-[#17251E] text-[#17251E]'
+                                : 'bg-[#EDE6D3]/30 border-transparent hover:bg-[#EDE6D3]/60 text-[#3A362E]'
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Availability Pill Choice */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-3">Availability</label>
+                    <div className="flex flex-wrap gap-2">
+                      {availabilityOptions.map(option => (
+                        <button
+                          type="button"
+                          key={option}
+                          onClick={() => setSelectedAvailability(option)}
+                          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition duration-200 border cursor-pointer ${
+                            selectedAvailability === option
+                              ? 'bg-[#FFF8EF] border-[#17251E] text-[#17251E]'
+                              : 'bg-[#EDE6D3]/30 border-transparent hover:bg-[#EDE6D3]/60 text-[#3A362E]'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Text Areas */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">Relevant skills / experience</label>
+                    <textarea
+                      name="skills"
+                      rows={3}
+                      value={formData.skills}
+                      onChange={handleInputChange}
+                      placeholder="Share any special skills or previous volunteering experience..."
+                      className="w-full px-5 py-3.5 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#3A362E] mb-2">Why would you like to volunteer?</label>
+                    <textarea
+                      name="whyJoin"
+                      rows={3}
+                      value={formData.whyJoin}
+                      onChange={handleInputChange}
+                      placeholder="Tell us what motivates you to join us..."
+                      className="w-full px-5 py-3.5 border border-[#E4DAC4] bg-[#FFF8EF] rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#17251E] transition text-sm"
+                    />
+                  </div>
+
+                  {/* Submit button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] py-4 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Join the Community'
+                    )}
+                  </button>
+
+                  <span className="text-[10px] text-gray-500 block text-center mt-2">Together, we can create a kinder city for every paw.</span>
+                </form>
+
+              </div>
+            </ScrollAnimate>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. Bottom Banner CTA */}
+      <section className="px-6 lg:px-8 max-w-7xl mx-auto my-8">
+        <ScrollAnimate animation="fade-up">
+          <div className="bg-[#17251E] text-[#FFF8EF] p-12 md:p-16 rounded-[2.5rem] text-center shadow-lg relative overflow-hidden">
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h3 className="text-3xl md:text-5xl font-manrope font-extrabold leading-tight mb-8">
+                Ready to make a difference?
+              </h3>
+              <p className="text-xs md:text-sm font-dm-sans opacity-70 mb-8 max-w-lg mx-auto">
+                Join Nagpur Street Dogs and become part of a community working for a safer, kinder city for animals.
+              </p>
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('join-form');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-[#C1592A] hover:bg-[#D97706] text-[#FFF8EF] px-8 py-3.5 rounded-full font-dm-sans font-bold text-sm tracking-wide transition duration-300 shadow-md hover:-translate-y-0.5 cursor-pointer"
+              >
+                Become a Volunteer
+              </button>
+            </div>
+          </div>
+        </ScrollAnimate>
+      </section>
+
+    </div>
+  );
 }
 
 export default VolunteerPage;
